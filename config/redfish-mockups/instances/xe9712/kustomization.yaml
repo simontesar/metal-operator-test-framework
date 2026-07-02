@@ -23,6 +23,7 @@ labels:
     app.kubernetes.io/instance: xe9712
 
 patches:
+# Resolves PLACEHOLDER_BMC_IP (Service clusterIP)
 - target:
     kind: Service
     name: mockup
@@ -30,6 +31,8 @@ patches:
     - op: replace
       path: /spec/clusterIP
       value: 10.96.200.13
+# Resolves PLACEHOLDER_CLIENT, PLACEHOLDER_CLIENTS_MOUNT, and
+# PLACEHOLDER_TLS_SECRET
 - target:
     kind: Deployment
     name: mockup
@@ -43,6 +46,7 @@ patches:
     - op: replace
       path: /spec/template/spec/volumes/1/secret/secretName
       value: redfish-xe9712-tls
+# Resolves PLACEHOLDER_TLS_SECRET
 - target:
     kind: Certificate
     name: tls
@@ -50,6 +54,7 @@ patches:
     - op: replace
       path: /spec/secretName
       value: redfish-xe9712-tls
+# Resolves BMC placeholders
 - target:
     kind: BMC
     name: mockup
@@ -63,6 +68,7 @@ patches:
     - op: replace
       path: /spec/access/ip
       value: 10.96.200.13
+# Resolves BMCSecret credential placeholders
 - target:
     kind: BMCSecret
     name: mockup
@@ -75,6 +81,7 @@ patches:
       value: bar
 
 replacements:
+# Resolves SERVICE_NAME
 - source:
     kind: Service
     name: mockup
@@ -90,6 +97,7 @@ replacements:
       delimiter: "."
       index: 0
       create: true
+# Resolves SERVICE_NAMESPACE
 - source:
     kind: Service
     name: mockup

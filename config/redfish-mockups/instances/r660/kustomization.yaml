@@ -1,30 +1,12 @@
 # Instance overlay for the R660xs iDRAC mockup client.
 #
-# Placeholders in ../../components/mockup/ and how this file resolves them:
-#
-#   PLACEHOLDER_CLIENT (Deployment container args)
-#     -> /clients/R660xs_iDRAC9_7_20_10_05_mockup_client
-#
-#   PLACEHOLDER_CLIENTS_MOUNT (Deployment hostPath volume path)
-#     -> /redfish-clients (Kind node path from KIND_EXTRA_MOUNTS)
-#
-#   PLACEHOLDER_TLS_SECRET (Deployment volume + Certificate spec.secretName)
-#     -> redfish-r660-tls (after namePrefix on Certificate metadata name)
-#
-#   SERVICE_NAME / SERVICE_NAMESPACE (Certificate spec.dnsNames)
-#     -> redfish-r660-mockup / metal-operator-system
-#
-#   PLACEHOLDER_BMC_SECRET_NAME (BMC spec.bmcSecretRef.name)
-#     -> redfish-r660-mockup
-#
-#   PLACEHOLDER_HOSTNAME (BMC spec.hostname)
-#     -> dell-r660xs-mockup
-#
-#   PLACEHOLDER_BMC_IP (BMC spec.access.ip)
-#     -> 10.96.200.10 (matches Service clusterIP)
-#
-#   PLACEHOLDER_USERNAME / PLACEHOLDER_PASSWORD (BMCSecret stringData)
-#     -> foo / bar
+#   PLACEHOLDER_CLIENT -> /clients/R660xs_iDRAC9_7_20_10_05_mockup_client
+#   PLACEHOLDER_CLIENTS_MOUNT -> /redfish-clients
+#   PLACEHOLDER_TLS_SECRET -> redfish-r660-tls
+#   PLACEHOLDER_BMC_SECRET_NAME -> redfish-r660-mockup
+#   PLACEHOLDER_HOSTNAME -> dell-r660xs-mockup
+#   PLACEHOLDER_BMC_IP -> 10.96.200.10
+#   PLACEHOLDER_USERNAME / PLACEHOLDER_PASSWORD -> foo / bar
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
