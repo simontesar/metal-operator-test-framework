@@ -1,11 +1,11 @@
-# Instance overlay for the R660xs iDRAC mockup client.
+# Instance overlay for the R770 iDRAC mockup client.
 #
-#   PLACEHOLDER_CLIENT -> /clients/R660xs_iDRAC9_7_20_10_05_mockup_client
+#   PLACEHOLDER_CLIENT -> /clients/R770_iDRAC10_1_10_17_00_mockup_client
 #   PLACEHOLDER_CLIENTS_MOUNT -> /redfish-clients
-#   PLACEHOLDER_TLS_SECRET -> redfish-r660-tls
-#   PLACEHOLDER_BMC_SECRET_NAME -> redfish-r660-mockup
-#   PLACEHOLDER_HOSTNAME -> dell-r660xs-mockup
-#   PLACEHOLDER_BMC_IP -> 10.96.200.10
+#   PLACEHOLDER_TLS_SECRET -> redfish-r770-tls
+#   PLACEHOLDER_BMC_SECRET_NAME -> redfish-r770-mockup
+#   PLACEHOLDER_HOSTNAME -> dell-r770-mockup
+#   PLACEHOLDER_BMC_IP -> 10.96.200.11
 #   PLACEHOLDER_USERNAME / PLACEHOLDER_PASSWORD -> foo / bar
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -15,14 +15,22 @@ namespace: metal-operator-system
 components:
 - ../../components/mockup
 
-namePrefix: redfish-r660-
+namePrefix: redfish-r770-
 
 labels:
 - includeSelectors: true
   pairs:
-    app.kubernetes.io/instance: r660
+    app.kubernetes.io/instance: r770
 
 patches:
+# Resolves PLACEHOLDER_BMC_IP (Service clusterIP)
+- target:
+    kind: Service
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/clusterIP
+      value: 10.96.200.11
 # Resolves PLACEHOLDER_CLIENT, PLACEHOLDER_CLIENTS_MOUNT, and
 # PLACEHOLDER_TLS_SECRET
 - target:
@@ -31,13 +39,13 @@ patches:
   patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/args/1
-      value: /clients/R660xs_iDRAC9_7_20_10_05_mockup_client
+      value: /clients/R770_iDRAC10_1_10_17_00_mockup_client
     - op: replace
       path: /spec/template/spec/volumes/0/hostPath/path
       value: /redfish-clients
     - op: replace
       path: /spec/template/spec/volumes/1/secret/secretName
-      value: redfish-r660-tls
+      value: redfish-r770-tls
 # Resolves PLACEHOLDER_TLS_SECRET
 - target:
     kind: Certificate
@@ -45,7 +53,7 @@ patches:
   patch: |-
     - op: replace
       path: /spec/secretName
-      value: redfish-r660-tls
+      value: redfish-r770-tls
 # Resolves BMC placeholders
 - target:
     kind: BMC
@@ -53,13 +61,13 @@ patches:
   patch: |-
     - op: replace
       path: /spec/bmcSecretRef/name
-      value: redfish-r660-mockup
+      value: redfish-r770-mockup
     - op: replace
       path: /spec/hostname
-      value: dell-r660xs-mockup
+      value: dell-r770-mockup
     - op: replace
       path: /spec/access/ip
-      value: 10.96.200.10
+      value: 10.96.200.11
 # Resolves BMCSecret credential placeholders
 - target:
     kind: BMCSecret

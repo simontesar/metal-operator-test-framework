@@ -3,3 +3,8 @@ kind: Kustomization
 
 resources:
 - instances/r660
+- instances/r770
+- instances/r7725
+- instances/xe9712
+- instances/gpu-dpu
+- instances/basic
