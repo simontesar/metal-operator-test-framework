@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mockup
+  labels:
+    app.kubernetes.io/name: redfish-mockup
+    app.kubernetes.io/component: redfish-mockup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redfish-mockup
+      app.kubernetes.io/component: redfish-mockup
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redfish-mockup
+        app.kubernetes.io/component: redfish-mockup
+    spec:
+      containers:
+      - name: mockup
+        image: docker.io/dmtf/redfish-mockup-server:latest
+        args:
+        - "-D"
+        - "/clients/PLACEHOLDER_CLIENT"
+        - "--ssl"
+        - "--cert"
+        - "/certs/tls.crt"
+        - "--key"
+        - "/certs/tls.key"
+        - "-p"
+        - "8000"
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: clients
+          mountPath: /clients
+          readOnly: true
+        - name: tls
+          mountPath: /certs
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /redfish/v1
+            port: 8000
+            scheme: HTTPS
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /redfish/v1
+            port: 8000
+            scheme: HTTPS
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: clients
+        hostPath:
+          path: PLACEHOLDER_CLIENTS_MOUNT
+          type: Directory
+      - name: tls
+        secret:
+          secretName: PLACEHOLDER_TLS_SECRET
