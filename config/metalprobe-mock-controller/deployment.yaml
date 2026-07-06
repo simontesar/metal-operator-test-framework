@@ -29,6 +29,7 @@ spec:
         - /metalprobe-mock-controller
         args:
         - --leader-elect
+        - --registry-url=http://metal-registry.metal-operator-system.svc:30000
         ports:
         - containerPort: 8081
           name: health
