@@ -8,3 +8,9 @@ resources:
 - instances/xe9712
 - instances/gpu-dpu
 - instances/basic
+- instances/r660-go
+- instances/r770-go
+- instances/r7725-go
+- instances/xe9712-go
+- instances/gpu-dpu-go
+- instances/basic-go

@@ -1,0 +1,20 @@
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BMC
+metadata:
+  name: mockup
+  labels:
+    app.kubernetes.io/name: redfish-go-mockup
+    app.kubernetes.io/component: redfish-go-mockup
+spec:
+  bmcSecretRef:
+    name: PLACEHOLDER_BMC_SECRET_NAME
+  hostname: PLACEHOLDER_HOSTNAME
+  consoleProtocol:
+    name: SSH
+    port: 22
+  access:
+    ip: PLACEHOLDER_BMC_IP
+  protocol:
+    name: Redfish
+    port: 8000
+    scheme: http
