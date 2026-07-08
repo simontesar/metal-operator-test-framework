@@ -1,0 +1,57 @@
+# Instance overlay for the iDRAC basic config Go mockup client.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: metal-operator-system
+
+components:
+- ../../components/go-mockup
+
+namePrefix: redfish-basic-go-
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/instance: basic-go
+
+patches:
+- target:
+    kind: Service
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/clusterIP
+      value: 10.96.200.25
+- target:
+    kind: Deployment
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/args/3
+      value: /clients/iDRAC_mockup_client_basic_config/redfish/v1
+    - op: replace
+      path: /spec/template/spec/volumes/0/hostPath/path
+      value: /redfish-clients
+- target:
+    kind: BMC
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/bmcSecretRef/name
+      value: redfish-basic-go-mockup
+    - op: replace
+      path: /spec/hostname
+      value: dell-basic-go-mockup
+    - op: replace
+      path: /spec/access/ip
+      value: 10.96.200.25
+- target:
+    kind: BMCSecret
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /stringData/username
+      value: foo
+    - op: replace
+      path: /stringData/password
+      value: bar

@@ -1,0 +1,57 @@
+# Instance overlay for the R7725 iDRAC Go mockup client.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: metal-operator-system
+
+components:
+- ../../components/go-mockup
+
+namePrefix: redfish-r7725-go-
+
+labels:
+- includeSelectors: true
+  pairs:
+    app.kubernetes.io/instance: r7725-go
+
+patches:
+- target:
+    kind: Service
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/clusterIP
+      value: 10.96.200.22
+- target:
+    kind: Deployment
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/args/3
+      value: /clients/R7725_iDRAC10_1_20_70_50_mockup_client/redfish/v1
+    - op: replace
+      path: /spec/template/spec/volumes/0/hostPath/path
+      value: /redfish-clients
+- target:
+    kind: BMC
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /spec/bmcSecretRef/name
+      value: redfish-r7725-go-mockup
+    - op: replace
+      path: /spec/hostname
+      value: dell-r7725-go-mockup
+    - op: replace
+      path: /spec/access/ip
+      value: 10.96.200.22
+- target:
+    kind: BMCSecret
+    name: mockup
+  patch: |-
+    - op: replace
+      path: /stringData/username
+      value: foo
+    - op: replace
+      path: /stringData/password
+      value: bar

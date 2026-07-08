@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mockup
+  labels:
+    app.kubernetes.io/name: redfish-go-mockup
+    app.kubernetes.io/component: redfish-go-mockup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: redfish-go-mockup
+      app.kubernetes.io/component: redfish-go-mockup
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: redfish-go-mockup
+        app.kubernetes.io/component: redfish-go-mockup
+    spec:
+      containers:
+      - name: mock-server
+        image: mock-server:latest
+        imagePullPolicy: IfNotPresent
+        args:
+        - -addr
+        - :8000
+        - -data
+        - /clients/PLACEHOLDER_CLIENT/redfish/v1
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+        - name: clients
+          mountPath: /clients
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /redfish/v1
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /redfish/v1
+            port: 8000
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: clients
+        hostPath:
+          path: PLACEHOLDER_CLIENTS_MOUNT
+          type: Directory

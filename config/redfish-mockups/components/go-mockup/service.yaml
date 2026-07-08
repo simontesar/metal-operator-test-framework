@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mockup
+spec:
+  clusterIP: 10.96.200.20
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    app.kubernetes.io/name: redfish-go-mockup
+    app.kubernetes.io/component: redfish-go-mockup
