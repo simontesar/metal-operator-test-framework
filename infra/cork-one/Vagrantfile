@@ -1,0 +1,53 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+parent_if = ENV.fetch("PARENT_IF", "en0")
+
+bridges = {
+  vlan100: ENV.fetch("VLAN100_BRIDGE", "vlan0"),
+  vlan200: ENV.fetch("VLAN200_BRIDGE", "vlan1"),
+  upstream_ib: ENV.fetch("UPSTREAM_IB_BRIDGE"),
+  upstream_oob: ENV.fetch("UPSTREAM_OOB_BRIDGE"),
+  trunk: ENV.fetch("TRUNK_BRIDGE", parent_if),
+}
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-24.04"
+
+  config.vm.provider "parallels" do |prl|
+  end
+
+  config.vm.define "node1" do |node1|
+    node1.vm.hostname = "node1"
+    node1.vm.network "public_network",
+      bridge: bridges[:upstream_ib],
+      auto_config: false
+    node1.vm.network "public_network",
+      bridge: bridges[:upstream_oob],
+      auto_config: false
+    node1.vm.network "public_network",
+      bridge: bridges[:trunk],
+      auto_config: false
+    node1.vm.provision "shell", path: "scripts/provision-node1-trunk.sh"
+  end
+
+  config.vm.define "node2" do |node2|
+    node2.vm.hostname = "node2"
+    node2.vm.network "public_network",
+      bridge: bridges[:vlan100],
+      auto_config: false
+    node2.vm.network "public_network",
+      bridge: bridges[:vlan200],
+      auto_config: false
+  end
+
+  config.vm.define "node3" do |node3|
+    node3.vm.hostname = "node3"
+    node3.vm.network "public_network",
+      bridge: bridges[:vlan100],
+      auto_config: false
+    node3.vm.network "public_network",
+      bridge: bridges[:vlan200],
+      auto_config: false
+  end
+end
