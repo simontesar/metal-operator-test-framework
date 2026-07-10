@@ -32,6 +32,11 @@ Vagrant.configure("2") do |config|
       bridge: bridges[:trunk],
       auto_config: false
     master.vm.provision "shell", path: "scripts/provision-master.sh"
+
+    master.trigger.after :up do |trigger|
+      trigger.name = "k3s"
+      trigger.run = { path: "scripts/provision-k3s.sh" }
+    end
   end
 
   config.vm.define "node1" do |node1|
