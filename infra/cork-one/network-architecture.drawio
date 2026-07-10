@@ -1,0 +1,88 @@
+<mxfile host="65bd71144e">
+    <diagram id="m0qeBpX2kVo1bzwp_07p" name="Page-1">
+        <mxGraphModel dx="1560" dy="1066" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="76" style="edgeStyle=none;html=1;fillColor=#e1d5e7;strokeColor=#000000;" edge="1" parent="1" source="62">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1464" y="639.6666666666667" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="74" style="edgeStyle=none;html=1;fillColor=#e1d5e7;strokeColor=#000000;" edge="1" parent="1" source="60">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1275" y="639.6666666666667" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="73" style="edgeStyle=none;html=1;fillColor=#fff2cc;strokeColor=#000000;" edge="1" parent="1" source="61">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1155" y="699.6666666666667" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="75" style="edgeStyle=none;html=1;fillColor=#fff2cc;strokeColor=#000000;" edge="1" parent="1" source="63">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1344" y="699.6666666666667" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="71" style="edgeStyle=none;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;fillColor=#e1d5e7;strokeColor=#000000;" edge="1" parent="1" source="67">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1009" y="679.6666666666667" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="72" style="edgeStyle=none;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;fillColor=#fff2cc;strokeColor=#000000;" edge="1" parent="1" source="67">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1051" y="679.6666666666667" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="56" value="VLAN 100 Internal OOB Network" style="html=1;outlineConnect=0;fillColor=#9577A3;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.bus;gradientColor=none;gradientDirection=north;fontColor=#ffffff;perimeter=backbonePerimeter;backboneSize=20;" vertex="1" parent="1">
+                    <mxGeometry x="890" y="600" width="600" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="57" value="VLAN 200 Internal IB Network" style="html=1;outlineConnect=0;fillColor=#D6B656;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.bus;gradientColor=none;gradientDirection=north;fontColor=#ffffff;perimeter=backbonePerimeter;backboneSize=20;" vertex="1" parent="1">
+                    <mxGeometry x="890" y="660" width="600" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="58" value="" style="strokeColor=#666666;html=1;labelPosition=right;align=left;spacingLeft=15;shadow=0;dashed=0;outlineConnect=0;shape=mxgraph.rack.dell.dell_poweredge_1u;" vertex="1" parent="1">
+                    <mxGeometry x="1134" y="790" width="162" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="59" value="" style="strokeColor=#666666;html=1;labelPosition=right;align=left;spacingLeft=15;shadow=0;dashed=0;outlineConnect=0;shape=mxgraph.rack.dell.dell_poweredge_1u;" vertex="1" parent="1">
+                    <mxGeometry x="1323" y="790" width="162" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="60" value="iDRAC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="1254" y="810" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="61" value="NIC 1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;rotation=0;" vertex="1" parent="1">
+                    <mxGeometry x="1134" y="810" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="62" value="iDRAC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+                    <mxGeometry x="1443" y="810" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="63" value="NIC 1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;rotation=0;" vertex="1" parent="1">
+                    <mxGeometry x="1323" y="810" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="64" value="" style="strokeColor=#666666;html=1;labelPosition=right;align=left;spacingLeft=15;shadow=0;dashed=0;outlineConnect=0;shape=mxgraph.rack.dell.dell_poweredge_1u;" vertex="1" parent="1">
+                    <mxGeometry x="949" y="510" width="162" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="77" style="edgeStyle=none;html=1;" edge="1" parent="1" source="65" target="68">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="65" value="NIC 1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;rotation=0;" vertex="1" parent="1">
+                    <mxGeometry x="949" y="530" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="78" style="edgeStyle=none;html=1;" edge="1" parent="1" source="66" target="70">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="66" value="iDRAC" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+                    <mxGeometry x="1069" y="530" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="67" value="NIC 2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=light-dark(#D6B656,#9577A3);rotation=0;gradientColor=#9577A3;gradientDirection=south;fillStyle=auto;" vertex="1" parent="1">
+                    <mxGeometry x="1009" y="530" width="42" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="68" value="Upstream&lt;br&gt;IB Network" style="html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.cloud;fontColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="925" y="380" width="90" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="70" value="Upstream&lt;br&gt;OOB Network" style="html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.cloud;fontColor=#ffffff;" vertex="1" parent="1">
+                    <mxGeometry x="1045" y="380" width="90" height="50" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
