@@ -1,0 +1,2 @@
+# Trunk NIC for VLAN subinterfaces; override per environment.
+dnsmasq_trunk_interface: ""

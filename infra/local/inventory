@@ -1,5 +1,5 @@
 [master]
-master ansible_host=10.211.55.27 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/master/parallels/private_key
+master ansible_host=10.211.55.34 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/master/parallels/private_key
 
 [master:vars]
 ansible_ssh_common_args=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null

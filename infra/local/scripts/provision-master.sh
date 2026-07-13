@@ -41,20 +41,4 @@ EOF
 
 netplan apply
 
-apt-get update -qq
-DEBIAN_FRONTEND=noninteractive apt-get install -y -qq dnsmasq
-
-DNSMASQ_TEMPLATE="/vagrant/config/dnsmasq-cork-one.conf"
-if [[ ! -f "${DNSMASQ_TEMPLATE}" ]]; then
-  echo "dnsmasq template not found at ${DNSMASQ_TEMPLATE}" >&2
-  exit 1
-fi
-
-sed "s/{{TRUNK_IF}}/${TRUNK_IF}/g" \
-  "${DNSMASQ_TEMPLATE}" \
-  > /etc/dnsmasq.d/cork-one.conf
-
-systemctl enable dnsmasq
-systemctl restart dnsmasq
-
-echo "Configured master: trunk=${TRUNK_IF}, dnsmasq active"
+echo "Configured master network: trunk=${TRUNK_IF}"

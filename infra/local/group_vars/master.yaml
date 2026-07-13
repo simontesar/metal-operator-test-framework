@@ -1,0 +1,15 @@
+dnsmasq_trunk_interface: eth3
+
+dnsmasq_static_leases:
+  - mac: "02:00:64:00:01:01"
+    ip: 172.16.100.11
+    hostname: node1-idrac
+  - mac: "02:00:c8:00:01:01"
+    ip: 10.250.200.11
+    hostname: node1-nic1
+  - mac: "02:00:64:00:02:01"
+    ip: 172.16.100.12
+    hostname: node2-idrac
+  - mac: "02:00:c8:00:02:01"
+    ip: 10.250.200.12
+    hostname: node2-nic1

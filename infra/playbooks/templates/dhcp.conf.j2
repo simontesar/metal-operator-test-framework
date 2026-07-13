@@ -1,0 +1,16 @@
+# DHCP only; systemd-resolved owns port 53 on Ubuntu.
+port=0
+interface={{ dnsmasq_trunk_interface }}.100
+interface={{ dnsmasq_trunk_interface }}.200
+bind-interfaces
+except-interface=lo
+
+dhcp-range=set:oob,172.16.100.0,static
+dhcp-range=set:ib,10.250.200.0,static
+
+{% for lease in dnsmasq_static_leases %}
+dhcp-host={{ lease.mac }},{{ lease.ip }},{{ lease.hostname }},infinite
+{% endfor %}
+
+dhcp-option=tag:oob,option:router,172.16.100.1
+dhcp-option=tag:ib,option:router,10.250.200.1
