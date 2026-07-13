@@ -1,0 +1,28 @@
+# values-metal-operator.yaml is embedded in spec.valuesContent below.
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: metal-operator
+  namespace: kube-system
+spec:
+  chart: oci://ghcr.io/ironcore-dev/charts/metal-operator
+  version: "0.6.1-20260710145725-1e8e8fb"
+  targetNamespace: metal-operator-system
+  createNamespace: true
+  valuesContent: |-
+    registry:
+      enabled: true
+      port: 30000
+
+    prometheus:
+      enable: false
+
+    controllerManager:
+      manager:
+        args:
+          - "--leader-elect"
+          - "--metrics-bind-address=:8443"
+          - "--health-probe-bind-address=:8081"
+          - "--probe-image=ghcr.io/ironcore-dev/metalprobe:latest"
+          - "--probe-os-image=ghcr.io/ironcore-dev/os-images/gardenlinux:1877.0"
+          - "--registry-url=http://metal-registry.metal-operator-system.svc:30000"
