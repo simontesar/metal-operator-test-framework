@@ -1,5 +1,5 @@
 ---
-- name: Install k3s server on master
+- name: Configure master node
   hosts: master
   become: true
   vars:
@@ -10,13 +10,44 @@
       --write-kubeconfig-mode 644
 
   tasks:
-    - name: Install dependencies
+    - name: Require dnsmasq trunk interface
+      ansible.builtin.assert:
+        that:
+          - dnsmasq_trunk_interface | length > 0
+        fail_msg: >-
+          Set dnsmasq_trunk_interface in environment group_vars.
+      tags: dnsmasq
+
+    - name: Install dnsmasq
+      ansible.builtin.apt:
+        name: dnsmasq
+        state: present
+        update_cache: true
+      tags: dnsmasq
+
+    - name: Deploy dhcp.conf
+      ansible.builtin.template:
+        src: templates/dhcp.conf.j2
+        dest: /etc/dnsmasq.d/dhcp.conf
+        mode: "0644"
+      notify: Restart dnsmasq
+      tags: dnsmasq
+
+    - name: Enable and start dnsmasq
+      ansible.builtin.systemd:
+        name: dnsmasq
+        enabled: true
+        state: started
+      tags: dnsmasq
+
+    - name: Install k3s dependencies
       ansible.builtin.apt:
         name:
           - curl
           - ca-certificates
         state: present
         update_cache: true
+      tags: k3s
 
     - name: Install k3s server
       ansible.builtin.shell: curl -sfL https://get.k3s.io | sh -
@@ -25,12 +56,14 @@
       args:
         creates: /usr/local/bin/k3s
         executable: /bin/bash
+      tags: k3s
 
     - name: Enable and start k3s
       ansible.builtin.systemd:
         name: k3s
         enabled: true
         state: started
+      tags: k3s
 
     - name: Wait for k3s node to be Ready
       ansible.builtin.command: k3s kubectl get nodes
@@ -39,39 +72,32 @@
       retries: 12
       delay: 10
       changed_when: false
+      tags: k3s
 
     - name: Allow non-root read of k3s kubeconfig
       ansible.builtin.file:
         path: /etc/rancher/k3s/k3s.yaml
         mode: "0644"
+      tags: k3s
 
-    - name: Ensure .kube directory for vagrant user
-      ansible.builtin.file:
-        path: /home/vagrant/.kube
-        state: directory
-        owner: vagrant
-        group: vagrant
-        mode: "0700"
-
-    - name: Install kubeconfig for vagrant user
-      ansible.builtin.copy:
-        src: /etc/rancher/k3s/k3s.yaml
-        dest: /home/vagrant/.kube/config
-        remote_src: true
-        owner: vagrant
-        group: vagrant
-        mode: "0600"
-
-    - name: Fetch kubeconfig to playbook directory
+    - name: Fetch kubeconfig to host
       ansible.builtin.fetch:
         src: /etc/rancher/k3s/k3s.yaml
-        dest: "{{ playbook_dir }}/kubeconfig"
+        dest: "{{ kubeconfig_dest }}"
         flat: true
+      tags: k3s
 
     - name: Rewrite server address for host access
       ansible.builtin.replace:
-        path: "{{ playbook_dir }}/kubeconfig"
+        path: "{{ kubeconfig_dest }}"
         regexp: 'server: https://[^:]+:6443'
         replace: "server: https://{{ ansible_host }}:6443"
       delegate_to: localhost
       become: false
+      tags: k3s
+
+  handlers:
+    - name: Restart dnsmasq
+      ansible.builtin.systemd:
+        name: dnsmasq
+        state: restarted

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+ENV_DIR="$(pwd)"
 
 MASTER_IP=$(
   vagrant ssh-config master | awk '/HostName/ { print $2 }'
@@ -20,4 +21,6 @@ master ansible_host=${MASTER_IP} ansible_user=vagrant ansible_private_key_file=.
 ansible_ssh_common_args=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
 EOF
 
-ansible-playbook master.yaml -i inventory
+ansible-playbook "${ENV_DIR}/../playbooks/master.yaml" \
+  -i inventory \
+  -e "kubeconfig_dest=${ENV_DIR}/kubeconfig"

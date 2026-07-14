@@ -17,9 +17,9 @@ create_vlan() {
     return 0
   fi
 
-  ifconfig "${iface}" create
-  ifconfig "${iface}" vlan "${vlan_id}" vlandev "${parent}"
-  ifconfig "${iface}" up
+  sudo ifconfig "${iface}" create
+  sudo ifconfig "${iface}" vlan "${vlan_id}" vlandev "${parent}"
+  sudo ifconfig "${iface}" up
   echo "Created ${iface} (VLAN ${vlan_id} on ${parent})"
 }
 
@@ -39,7 +39,7 @@ cleanup_host_interfaces() {
 
   for iface in "${VLAN100_BRIDGE}" "${VLAN200_BRIDGE}"; do
     if ifconfig "${iface}" >/dev/null 2>&1; then
-      ifconfig "${iface}" destroy
+      sudo ifconfig "${iface}" destroy
       echo "Destroyed ${iface}"
       destroyed=$((destroyed + 1))
     else
