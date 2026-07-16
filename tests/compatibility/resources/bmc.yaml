@@ -1,0 +1,13 @@
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BMC
+metadata:
+  name: (join('-', ['compatibility', $namespace]))
+spec:
+  bmcSecretRef:
+    name: (join('-', ['compatibility', $namespace]))
+  access:
+    ip: ($values.bmcIP)
+  protocol:
+    name: Redfish
+    port: ($values.bmcPort)
+    scheme: ($values.bmcScheme)
