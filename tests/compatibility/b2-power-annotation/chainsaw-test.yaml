@@ -1,8 +1,17 @@
 # B2 — Power operations via operation annotation (see cases.md)
-# Targets the contoso Go mock (embedded data). Each operation is applied via
-# the metal.ironcore.dev/operation annotation, mapped to a Redfish ResetType by
-# AnnotationToRedfishMapping. Order ends with the server powered off. Each assert
-# checks the annotation was consumed (removed) and powerState converged.
+# Requires a mock with working dynamic features (embedded-data Go mock, e.g.
+# contoso-go). The server is claimed first so it moves to Reserved, where the
+# controller enforces the claim's desired power state; on an unclaimed Available
+# server the controller would self-heal it back to powered-off, so annotation
+# power-on could never persist.
+#
+# Each operation is applied via the metal.ironcore.dev/operation annotation,
+# mapped to a Redfish ResetType by AnnotationToRedfishMapping. Each assert checks
+# the annotation was consumed (removed). force-on/graceful-restart/power-cycle
+# also assert powerState converges to On (stable, matching the claim's desired
+# On). force-off-server asserts only that the annotation was consumed: a Reserved
+# server is re-powered to the claim's desired On state, so a persistent Off
+# cannot be asserted here.
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
@@ -38,6 +47,22 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
+    - name: claim-server
+      try:
+        - apply:
+            file: ../resources/ignitionsecret.yaml
+        - apply:
+            file: ../resources/serverclaim.yaml
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Reserved
+                powerState: "On"
     - name: force-on-server
       try:
         - patch:
@@ -99,6 +124,8 @@ spec:
               status:
                 powerState: "On"
     - name: force-off-server
+      # Reserved server is re-powered to the claim's desired On state, so only
+      # the annotation-consumed check is asserted here (no persistent Off).
       try:
         - patch:
             resource:
@@ -116,5 +143,10 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
                 (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
-              status:
-                powerState: "Off"
+    - name: release-server
+      try:
+        - delete:
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerClaim
+              name: (join('-', ['compatibility', $namespace]))

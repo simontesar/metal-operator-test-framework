@@ -1,9 +1,10 @@
 # B3 — BMC reset (see cases.md)
-# Targets the contoso Go mock (embedded data); graceful-restart-bmc maps to a
-# Redfish Manager.Reset. Only A1 setup (registered BMC) is required.
-# NOTE: cases.md also asserts status.lastResetTime, but the embedded contoso
-# Managers/BMC data has no LastResetTime field, so metal-operator leaves it
-# zero/null. That assertion is intentionally omitted here.
+# graceful-restart-bmc maps to a Redfish Manager.Reset. Requires a mock with
+# working dynamic features (embedded-data Go mock, e.g. contoso-go). Only A1
+# setup (registered BMC) is required.
+# NOTE: cases.md also asserts status.lastResetTime, but the embedded-data Go
+# mock's Managers/BMC data has no LastResetTime field, so metal-operator leaves
+# it zero/null. That assertion is intentionally omitted here.
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:

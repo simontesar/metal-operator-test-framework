@@ -1,6 +1,6 @@
 # A1 — BMC registration (see cases.md)
-# basic-go mock populates model/firmwareVersion/powerState but not
-# manufacturer or macAddress; assertions match that observed status.
+# Asserts model/firmwareVersion/powerState from the selected values file; the
+# mock does not report manufacturer or macAddress, so those are not asserted.
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:

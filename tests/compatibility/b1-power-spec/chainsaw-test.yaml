@@ -1,6 +1,7 @@
 # B1 — Power on/off via Server spec (see cases.md)
-# Targets the contoso Go mock (embedded data); ComputerSystem.Reset flips
-# PowerState. Timeouts trimmed for a mock (no physical reboot latency).
+# ComputerSystem.Reset flips PowerState. Requires a mock with working dynamic
+# features (embedded-data Go mock, e.g. contoso-go). Timeouts trimmed for a mock
+# (no physical reboot latency).
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
