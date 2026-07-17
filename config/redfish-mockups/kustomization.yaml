@@ -14,3 +14,4 @@ resources:
 - instances/xe9712-go
 - instances/gpu-dpu-go
 - instances/basic-go
+- instances/contoso-go
