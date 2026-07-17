@@ -1,0 +1,5 @@
+bmcIP: "10.96.200.26"
+bmcPort: 8000
+bmcScheme: http
+username: foo
+password: bar
