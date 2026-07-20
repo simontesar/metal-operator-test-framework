@@ -1,7 +1,6 @@
 # B4 — Indicator LED (see cases.md)
-# Requires a mock with working dynamic features (embedded-data Go mock, e.g.
-# contoso-go) that persists the PATCH to the system IndicatorLED, so this is not
-# skippable here.
+# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
+# - Kept as a separate test to be skippable for models that do not support LED control
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:

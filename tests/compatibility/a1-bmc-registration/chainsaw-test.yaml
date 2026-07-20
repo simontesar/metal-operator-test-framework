@@ -1,6 +1,5 @@
-# A1 — BMC registration (see cases.md)
-# Asserts model/firmwareVersion/powerState from the selected values file; the
-# mock does not report manufacturer or macAddress, so those are not asserted.
+# A1 — BMC registration
+# Asserts model/firmwareVersion/powerState
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:

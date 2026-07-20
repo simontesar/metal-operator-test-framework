@@ -1,4 +1,4 @@
-# A2 — Server discovery and inventory (see cases.md)
+# A2 — Server discovery and inventory
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:

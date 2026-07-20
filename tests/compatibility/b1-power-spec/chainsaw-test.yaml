@@ -1,7 +1,5 @@
-# B1 — Power on/off via Server spec (see cases.md)
-# ComputerSystem.Reset flips PowerState. Requires a mock with working dynamic
-# features (embedded-data Go mock, e.g. contoso-go). Timeouts trimmed for a mock
-# (no physical reboot latency).
+# B1 — Power on/off via Server spec
+# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
