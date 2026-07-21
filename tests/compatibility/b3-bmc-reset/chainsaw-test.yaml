@@ -47,3 +47,4 @@ spec:
                 (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
               status:
                 state: Enabled
+                (lastResetTime != null): true
