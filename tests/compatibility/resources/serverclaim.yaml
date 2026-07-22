@@ -1,0 +1,11 @@
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: ServerClaim
+metadata:
+  name: (join('-', ['compatibility', $namespace]))
+spec:
+  power: "On"
+  serverRef:
+    name: (join('-', ['compatibility', $namespace, 'system-0']))
+  ignitionSecretRef:
+    name: (join('-', ['compatibility', $namespace, 'ignition']))
+  image: ($values.image)

@@ -1,0 +1,13 @@
+# Values for the Go basic Redfish mock (make go-mock-apply-basic).
+# Select with COMPATIBILITY_VALUES=basic-go (the default).
+# Service ClusterIP 10.96.200.25, port 8000, scheme http.
+# Status field values match what metal-operator reports for this mock.
+bmcIP: "10.96.200.25"
+bmcPort: 8000
+bmcScheme: http
+username: foo
+password: bar
+model: "15G Monolithic"
+firmwareVersion: "7.10.30.00"
+powerState: "On"
+image: "ghcr.io/ironcore-dev/gardenlinux:2150.4.0-metal-amd64"

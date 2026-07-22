@@ -1,0 +1,44 @@
+# A2 — Server discovery and inventory
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: a2-discovery
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../resources/bmcsecret.yaml
+        - apply:
+            file: ../resources/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            timeout: 15m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              spec:
+                (systemUUID != null): true
+              status:
+                state: Available
+                powerState: "Off"
+                (processors[?id != null]):
+                  (length(@) > `0`): true
+                (networkInterfaces[?name == 'eth0']):
+                  - (carrierStatus != null): true
+                (totalSystemMemory != null): true

@@ -1,0 +1,141 @@
+# B2 — Power operations via operation annotation
+# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
+# - Claims the Server to avoid it being forced off by the operator
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: b2-power-annotation
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../resources/bmcsecret.yaml
+        - apply:
+            file: ../resources/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Available
+    - name: claim-server
+      try:
+        - apply:
+            file: ../resources/ignitionsecret.yaml
+        - apply:
+            file: ../resources/serverclaim.yaml
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Reserved
+                powerState: "On"
+    - name: force-on-server
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                annotations:
+                  metal.ironcore.dev/operation: force-on-server
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "On"
+    - name: graceful-restart-server
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                annotations:
+                  metal.ironcore.dev/operation: graceful-restart-server
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "On"
+    - name: power-cycle-server
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                annotations:
+                  metal.ironcore.dev/operation: power-cycle-server
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "On"
+    - name: force-off-server
+      # Reserved server is re-powered to the claim's desired state, assume that
+      # the operation was fullfilled successfully once the annotation is absent
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                annotations:
+                  metal.ironcore.dev/operation: force-off-server
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+    - name: release-server
+      try:
+        - delete:
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerClaim
+              name: (join('-', ['compatibility', $namespace]))

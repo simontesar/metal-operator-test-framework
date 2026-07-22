@@ -1,0 +1,50 @@
+# B3 — BMC reset (see cases.md)
+# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
+# - Should be extended to asser status.lastResetTime once testing agains physical servers
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: b3-bmc-reset
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../resources/bmcsecret.yaml
+        - apply:
+            file: ../resources/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: graceful-restart-bmc
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+                annotations:
+                  metal.ironcore.dev/operation: graceful-restart-bmc
+    - name: assert-bmc-reset-complete
+      try:
+        - assert:
+            timeout: 1m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                state: Enabled
+                (lastResetTime != null): true
