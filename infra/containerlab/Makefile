@@ -113,3 +113,11 @@ metal-operator-deploy-wait: cert-manager-install cert-manager-wait \
 	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
 		deployment/metal-operator-controller-manager \
 		-n metal-operator-system --timeout=600s
+
+bmc-apply: ## Apply BMC + BMCSecret for node1 and node2
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
+
+bmc-delete: ## Delete BMC + BMCSecret for node1 and node2
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found

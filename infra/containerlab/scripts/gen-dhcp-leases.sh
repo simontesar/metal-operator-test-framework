@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Generate dnsmasq.conf with static leases matching qemu-bmc guest MACs.
 # MAC algorithm mirrors qemu-bmc/docker/setup-network.sh generate_mac().
+#
+# OOB BMC addresses are static on the qemu-bmc containers' eth1 and are not
+# leased. Only guest IB NICs (VM_NETWORKS=eth2) use DHCP.
+
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -18,10 +22,8 @@ generate_mac() {
   echo "52:54:00:${hash:0:2}:${hash:2:2}:${hash:4:2}"
 }
 
-# eth1 = OOB/iDRAC, eth2 = IB/NIC1 (VM_NETWORKS in topology)
-NODE1_OOB_MAC=$(generate_mac "${NODE1_UUID}" eth1)
+# Guest IB NIC is container eth2 (VM_NETWORKS).
 NODE1_IB_MAC=$(generate_mac "${NODE1_UUID}" eth2)
-NODE2_OOB_MAC=$(generate_mac "${NODE2_UUID}" eth1)
 NODE2_IB_MAC=$(generate_mac "${NODE2_UUID}" eth2)
 
 mkdir -p "$(dirname "${OUT}")"
@@ -35,20 +37,15 @@ interface=eth2
 bind-interfaces
 except-interface=lo
 
-dhcp-range=set:oob,172.16.100.0,static
 dhcp-range=set:ib,10.250.200.0,static
 
-dhcp-host=${NODE1_OOB_MAC},172.16.100.11,node1-idrac,infinite
 dhcp-host=${NODE1_IB_MAC},10.250.200.11,node1-nic1,infinite
-dhcp-host=${NODE2_OOB_MAC},172.16.100.12,node2-idrac,infinite
 dhcp-host=${NODE2_IB_MAC},10.250.200.12,node2-nic1,infinite
 
-dhcp-option=tag:oob,option:router,172.16.100.1
 dhcp-option=tag:ib,option:router,10.250.200.1
 EOF
 
 echo "Wrote ${OUT}"
-echo "  node1 OOB ${NODE1_OOB_MAC} -> 172.16.100.11"
-echo "  node1 IB  ${NODE1_IB_MAC} -> 10.250.200.11"
-echo "  node2 OOB ${NODE2_OOB_MAC} -> 172.16.100.12"
-echo "  node2 IB  ${NODE2_IB_MAC} -> 10.250.200.12"
+echo "  node1 IB ${NODE1_IB_MAC} -> 10.250.200.11"
+echo "  node2 IB ${NODE2_IB_MAC} -> 10.250.200.12"
+echo "  BMC OOB is static: node1=172.16.100.11 node2=172.16.100.12"

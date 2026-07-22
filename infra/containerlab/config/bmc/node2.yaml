@@ -1,0 +1,25 @@
+# BMC for qemu-bmc node2. Redfish listens on the container's OOB iface
+# (eth1 / 172.16.100.12), not on the guest NIC.
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BMCSecret
+metadata:
+  name: node2
+stringData:
+  username: admin
+  password: password
+---
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BMC
+metadata:
+  name: node2
+  labels:
+    containerlab.dev/node: node2
+spec:
+  bmcSecretRef:
+    name: node2
+  access:
+    ip: 172.16.100.12
+  protocol:
+    name: Redfish
+    port: 443
+    scheme: https
