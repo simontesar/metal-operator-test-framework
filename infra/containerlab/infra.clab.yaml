@@ -1,0 +1,132 @@
+# Dell infra lab: dual OOB/IB buses with qemu-bmc workers.
+# See infra/network-architecture.drawio and the containerlab plan.
+name: dell-infra
+
+# Avoid default 172.20.20.0/24 which overlaps Kind's 172.20.0.0/16.
+mgmt:
+  network: dell-infra
+  ipv4-subnet: 172.30.30.0/24
+
+topology:
+  groups:
+    workers:
+      kind: linux
+      image: ghcr.io/tjst-t/qemu-bmc:latest
+      devices:
+        - /dev/net/tun:/dev/net/tun
+      cap-add:
+        - NET_ADMIN
+        - SYS_ADMIN
+      env:
+        VM_NETWORKS: eth1,eth2
+        VM_DISK: /vm/disk.qcow2
+        VM_MEMORY: "2048"
+        VM_CPUS: "2"
+        VM_BOOT_MODE: bios
+        IPMI_USER: admin
+        IPMI_PASS: password
+        ENABLE_KVM: "false"
+
+  nodes:
+    node1:
+      group: workers
+      binds:
+        - ./vm/node1:/vm
+      ports:
+        - "4431:443"
+        - "6231:623/udp"
+        - "5901:5900"
+      env:
+        SYSTEM_UUID: "11111111-1111-1111-1111-111111111111"
+
+    node2:
+      group: workers
+      binds:
+        - ./vm/node2:/vm
+      ports:
+        - "4432:443"
+        - "6232:623/udp"
+        - "5902:5900"
+      env:
+        SYSTEM_UUID: "22222222-2222-2222-2222-222222222222"
+
+    oob-switch:
+      kind: linux
+      image: alpine:latest
+      exec:
+        - ip link add br0 type bridge
+        - ip link set br0 up
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set eth3 master br0
+        - ip link set eth4 master br0
+
+    ib-switch:
+      kind: linux
+      image: alpine:latest
+      exec:
+        - ip link add br0 type bridge
+        - ip link set br0 up
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set eth3 master br0
+        - ip link set eth4 master br0
+
+    dnsmasq:
+      kind: linux
+      image: alpine:latest
+      binds:
+        - ./config/dnsmasq.conf:/etc/dnsmasq.d/lab.conf:ro
+      # Wait for clab links (created after container start), then run dnsmasq
+      # in the foreground as PID 1. Semicolons required: YAML folds newlines.
+      cmd: >-
+        ash -c 'apk add --no-cache dnsmasq;
+        for i in $(seq 1 30); do
+          [ -e /sys/class/net/eth1 ] && [ -e /sys/class/net/eth2 ] && break;
+          sleep 1;
+        done;
+        ip addr add 172.16.100.1/24 dev eth1;
+        ip link set eth1 up;
+        ip addr add 10.250.200.1/24 dev eth2;
+        ip link set eth2 up;
+        exec dnsmasq -k'
+
+    k8s:
+      kind: k8s-kind
+      extras:
+        k8s_kind:
+          deploy:
+            # Resolved relative to the node LabDir (clab-<lab>/k8s/), so
+            # ../../kubeconfig lands next to this topology file.
+            kubeconfig: ../../kubeconfig
+
+    k8s-control-plane:
+      kind: ext-container
+      exec:
+        - ip addr add 172.16.100.2/24 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.250.200.2/24 dev eth2
+        - ip link set eth2 up
+
+  links:
+    # OOB bus (VLAN 100 / 172.16.100.0/24)
+    - endpoints: ["oob-switch:eth1", "dnsmasq:eth1"]
+    - endpoints: ["oob-switch:eth2", "node1:eth1"]
+    - endpoints: ["oob-switch:eth3", "node2:eth1"]
+    - endpoints: ["oob-switch:eth4", "k8s-control-plane:eth1"]
+    # IB bus (VLAN 200 / 10.250.200.0/24)
+    - endpoints: ["ib-switch:eth1", "dnsmasq:eth2"]
+    - endpoints: ["ib-switch:eth2", "node1:eth2"]
+    - endpoints: ["ib-switch:eth3", "node2:eth2"]
+    - endpoints: ["ib-switch:eth4", "k8s-control-plane:eth2"]
+    # Optional upstream host links (disabled by default):
+    # - type: host
+    #   endpoint:
+    #     node: k8s-control-plane
+    #     interface: eth3
+    #   host-interface: clab-upstream-ib
+    # - type: host
+    #   endpoint:
+    #     node: k8s-control-plane
+    #     interface: eth4
+    #   host-interface: clab-upstream-oob
