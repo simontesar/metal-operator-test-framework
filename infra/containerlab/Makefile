@@ -16,12 +16,15 @@ METAL_OPERATOR_DIR ?= ../../../metal-operator
 METAL_OPERATOR_STACK ?= ../../config/metal-operator
 BOOT_OPERATOR_DIR ?= ../../../boot-operator
 BOOT_OPERATOR_STACK ?= ../../config/boot-operator
+FEDHCP_DIR ?= ../../../FeDHCP
+FEDHCP_STACK ?= ../../config/fedhcp
 CERT_MANAGER_VERSION ?= v1.17.1
 CERT_MANAGER_MANIFEST ?= https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
 KIND_CLUSTER_NAME ?= k8s
 CONTROLLER_IMG ?= controller:latest
 METALDATA_IMG ?= metaldata:latest
 BOOT_CONTROLLER_IMG ?= boot-controller:latest
+FEDHCP_IMG ?= fedhcp:latest
 
 .PHONY: help disks disks-clean dhcp-config deploy destroy inspect check \
 	cert-manager-install cert-manager-wait \
@@ -29,6 +32,7 @@ BOOT_CONTROLLER_IMG ?= boot-controller:latest
 	metal-operator-deploy-wait \
 	boot-operator-images boot-operator-deploy boot-operator-delete \
 	boot-operator-deploy-wait \
+	fedhcp-images fedhcp-deploy fedhcp-delete fedhcp-deploy-wait \
 	bmc-apply bmc-delete
 
 help: ## Show available targets
@@ -64,7 +68,7 @@ disks-clean: ## Remove worker qcow2 disk images
 		echo "Removed $(VM_DIR)/$$n/disk.qcow2"; \
 	done
 
-dhcp-config: ## Regenerate config/dnsmasq.conf from SYSTEM_UUID MACs
+dhcp-config: ## Regenerate ../../config/fedhcp/leases_v4.txt from SYSTEM_UUID MACs
 	./scripts/gen-dhcp-leases.sh
 
 deploy: check disks dhcp-config ## Create disks, DHCP config, and deploy lab
@@ -146,6 +150,33 @@ boot-operator-deploy-wait: metal-operator-deploy-wait \
 	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
 		deployment/boot-operator-controller-manager \
 		-n boot-operator-system --timeout=600s
+
+fedhcp-images: ## Build and load the FeDHCP image into Kind
+	docker build -t $(FEDHCP_IMG) $(FEDHCP_DIR)
+	kind load docker-image $(FEDHCP_IMG) \
+		--name $(KIND_CLUSTER_NAME)
+
+fedhcp-deploy: ## Deploy FeDHCP via kustomize overlay
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(FEDHCP_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
+
+fedhcp-delete: ## Delete FeDHCP kustomize overlay
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(FEDHCP_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found
+
+fedhcp-deploy-wait: ## Deploy FeDHCP (after boot-operator), then wait
+fedhcp-deploy-wait: boot-operator-deploy-wait \
+	fedhcp-images fedhcp-deploy
+	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns fedhcp-system >/dev/null 2>&1; do \
+		echo "Waiting for fedhcp-system namespace..."; sleep 5; \
+	done
+	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) -n fedhcp-system \
+		get deploy fedhcp >/dev/null 2>&1; do \
+		echo "Waiting for fedhcp deployment..."; sleep 5; \
+	done
+	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
+		deployment/fedhcp \
+		-n fedhcp-system --timeout=300s
 
 bmc-apply: ## Apply BMC + BMCSecret for node1 and node2
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \
