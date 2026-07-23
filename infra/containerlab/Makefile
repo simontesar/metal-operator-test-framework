@@ -14,16 +14,21 @@ BMC_STACK ?= config/bmc
 
 METAL_OPERATOR_DIR ?= ../../../metal-operator
 METAL_OPERATOR_STACK ?= ../../config/metal-operator
+BOOT_OPERATOR_DIR ?= ../../../boot-operator
+BOOT_OPERATOR_STACK ?= ../../config/boot-operator
 CERT_MANAGER_VERSION ?= v1.17.1
 CERT_MANAGER_MANIFEST ?= https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
 KIND_CLUSTER_NAME ?= k8s
 CONTROLLER_IMG ?= controller:latest
 METALDATA_IMG ?= metaldata:latest
+BOOT_CONTROLLER_IMG ?= boot-controller:latest
 
 .PHONY: help disks disks-clean dhcp-config deploy destroy inspect check \
 	cert-manager-install cert-manager-wait \
 	metal-operator-images metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
+	boot-operator-images boot-operator-deploy boot-operator-delete \
+	boot-operator-deploy-wait \
 	bmc-apply bmc-delete
 
 help: ## Show available targets
@@ -113,6 +118,34 @@ metal-operator-deploy-wait: cert-manager-install cert-manager-wait \
 	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
 		deployment/metal-operator-controller-manager \
 		-n metal-operator-system --timeout=600s
+
+boot-operator-images: ## Build and load boot-operator controller image into Kind
+	$(MAKE) -C $(BOOT_OPERATOR_DIR) docker-build IMG=$(BOOT_CONTROLLER_IMG)
+	kind load docker-image $(BOOT_CONTROLLER_IMG) \
+		--name $(KIND_CLUSTER_NAME)
+
+boot-operator-deploy: ## Deploy boot-operator via kustomize overlay
+	$(MAKE) -C $(BOOT_OPERATOR_DIR) manifests
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BOOT_OPERATOR_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
+
+boot-operator-delete: ## Delete boot-operator kustomize overlay
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BOOT_OPERATOR_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found
+
+boot-operator-deploy-wait: ## Deploy boot-operator (after metal-operator), then wait
+boot-operator-deploy-wait: metal-operator-deploy-wait \
+	boot-operator-images boot-operator-deploy
+	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns boot-operator-system >/dev/null 2>&1; do \
+		echo "Waiting for boot-operator-system namespace..."; sleep 5; \
+	done
+	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) -n boot-operator-system \
+		get deploy boot-operator-controller-manager >/dev/null 2>&1; do \
+		echo "Waiting for boot-operator deployment..."; sleep 5; \
+	done
+	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
+		deployment/boot-operator-controller-manager \
+		-n boot-operator-system --timeout=600s
 
 bmc-apply: ## Apply BMC + BMCSecret for node1 and node2
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \

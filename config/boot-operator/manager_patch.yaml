@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        imagePullPolicy: IfNotPresent
+        args:
+        - --metrics-bind-address=:8443
+        - --leader-elect
+        - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
+        - --controllers=serverbootconfighttp,httpbootconfig
+        ports:
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        - containerPort: 8082
+          name: ipxe
+          protocol: TCP
+        - containerPort: 8083
+          name: image-proxy
+          protocol: TCP
