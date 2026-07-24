@@ -9,6 +9,7 @@ spec:
     - name: ipxe
       port: 8082
       targetPort: 8082
+      nodePort: 30082
     - name: image-proxy
       port: 8083
       targetPort: 8083

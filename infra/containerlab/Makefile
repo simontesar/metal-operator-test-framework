@@ -18,6 +18,7 @@ BOOT_OPERATOR_DIR ?= ../../../boot-operator
 BOOT_OPERATOR_STACK ?= ../../config/boot-operator
 FEDHCP_DIR ?= ../../../FeDHCP
 FEDHCP_STACK ?= ../../config/fedhcp
+TFTP_STACK ?= ../../config/tftp
 CERT_MANAGER_VERSION ?= v1.17.1
 CERT_MANAGER_MANIFEST ?= https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
 KIND_CLUSTER_NAME ?= k8s
@@ -25,6 +26,7 @@ CONTROLLER_IMG ?= controller:latest
 METALDATA_IMG ?= metaldata:latest
 BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
+TFTP_IMG ?= tftp:latest
 
 .PHONY: help disks disks-clean dhcp-config deploy destroy inspect check \
 	cert-manager-install cert-manager-wait \
@@ -33,6 +35,7 @@ FEDHCP_IMG ?= fedhcp:latest
 	boot-operator-images boot-operator-deploy boot-operator-delete \
 	boot-operator-deploy-wait \
 	fedhcp-images fedhcp-deploy fedhcp-delete fedhcp-deploy-wait \
+	tftp-images tftp-deploy tftp-delete tftp-deploy-wait \
 	bmc-apply bmc-delete
 
 help: ## Show available targets
@@ -164,8 +167,8 @@ fedhcp-delete: ## Delete FeDHCP kustomize overlay
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(FEDHCP_STACK) | \
 		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found
 
-fedhcp-deploy-wait: ## Deploy FeDHCP (after boot-operator), then wait
-fedhcp-deploy-wait: boot-operator-deploy-wait \
+fedhcp-deploy-wait: ## Deploy FeDHCP (after TFTP), then wait
+fedhcp-deploy-wait: tftp-deploy-wait \
 	fedhcp-images fedhcp-deploy
 	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns fedhcp-system >/dev/null 2>&1; do \
 		echo "Waiting for fedhcp-system namespace..."; sleep 5; \
@@ -177,6 +180,33 @@ fedhcp-deploy-wait: boot-operator-deploy-wait \
 	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
 		deployment/fedhcp \
 		-n fedhcp-system --timeout=300s
+
+tftp-images: ## Build and load the TFTP (iPXE chainload) image into Kind
+	docker build -t $(TFTP_IMG) $(TFTP_STACK)
+	kind load docker-image $(TFTP_IMG) \
+		--name $(KIND_CLUSTER_NAME)
+
+tftp-deploy: ## Deploy TFTP server via kustomize overlay
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(TFTP_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
+
+tftp-delete: ## Delete TFTP server kustomize overlay
+	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(TFTP_STACK) | \
+		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found
+
+tftp-deploy-wait: ## Deploy TFTP server (after boot-operator), then wait
+tftp-deploy-wait: boot-operator-deploy-wait \
+	tftp-images tftp-deploy
+	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns tftp-system >/dev/null 2>&1; do \
+		echo "Waiting for tftp-system namespace..."; sleep 5; \
+	done
+	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) -n tftp-system \
+		get deploy tftp >/dev/null 2>&1; do \
+		echo "Waiting for tftp deployment..."; sleep 5; \
+	done
+	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
+		deployment/tftp \
+		-n tftp-system --timeout=300s
 
 bmc-apply: ## Apply BMC + BMCSecret for node1 and node2
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \

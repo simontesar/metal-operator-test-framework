@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tftp
+  namespace: tftp-system
+  labels:
+    app: tftp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tftp
+  template:
+    metadata:
+      labels:
+        app: tftp
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: tftp
+        image: tftp:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: tftp
+          containerPort: 69
+          protocol: UDP
