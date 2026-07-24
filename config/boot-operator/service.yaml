@@ -4,6 +4,7 @@ metadata:
   name: boot-registry
   namespace: boot-operator-system
 spec:
+  type: NodePort
   ports:
     - name: ipxe
       port: 8082
@@ -11,6 +12,7 @@ spec:
     - name: image-proxy
       port: 8083
       targetPort: 8083
+      nodePort: 30083
   selector:
     control-plane: controller-manager
     app.kubernetes.io/name: boot-operator

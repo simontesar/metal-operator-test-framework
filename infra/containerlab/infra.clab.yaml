@@ -22,7 +22,8 @@ topology:
         VM_DISK: /vm/disk.qcow2
         VM_MEMORY: "2048"
         VM_CPUS: "2"
-        VM_BOOT_MODE: bios
+        VM_BOOT_MODE: uefi
+        VM_BOOT: n
         IPMI_USER: admin
         IPMI_PASS: password
         ENABLE_KVM: "false"
