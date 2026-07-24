@@ -38,7 +38,11 @@ spec:
         - name: config
           mountPath: /etc/fedhcp
           readOnly: true
+        - name: leases
+          mountPath: /var/lib/fedhcp
       volumes:
       - name: config
         configMap:
           name: fedhcp-config
+      - name: leases
+        emptyDir: {}
