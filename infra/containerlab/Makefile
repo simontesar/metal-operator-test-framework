@@ -28,7 +28,7 @@ BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
 
-.PHONY: help disks disks-clean dhcp-config deploy destroy inspect check \
+.PHONY: help dhcp-config deploy destroy inspect check \
 	cert-manager-install cert-manager-wait \
 	metal-operator-images metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
@@ -54,27 +54,10 @@ check: ## Fail if required tools are missing
 	@command -v $(KUBECTL) >/dev/null || \
 		{ echo "error: $(KUBECTL) not found" >&2; exit 1; }
 
-disks: ## Create missing qcow2 images for worker nodes
-	@for n in $(NODES); do \
-		mkdir -p $(VM_DIR)/$$n; \
-		if [ ! -f $(VM_DIR)/$$n/disk.qcow2 ]; then \
-			echo "Creating $(VM_DIR)/$$n/disk.qcow2 ($(DISK_SIZE))"; \
-			$(QEMU_IMG) create -f qcow2 $(VM_DIR)/$$n/disk.qcow2 $(DISK_SIZE); \
-		else \
-			echo "Keeping existing $(VM_DIR)/$$n/disk.qcow2"; \
-		fi; \
-	done
-
-disks-clean: ## Remove worker qcow2 disk images
-	@for n in $(NODES); do \
-		rm -f $(VM_DIR)/$$n/disk.qcow2; \
-		echo "Removed $(VM_DIR)/$$n/disk.qcow2"; \
-	done
-
 dhcp-config: ## Regenerate ../../config/fedhcp/leases_v4.txt from SYSTEM_UUID MACs
 	./scripts/gen-dhcp-leases.sh
 
-deploy: check disks dhcp-config ## Create disks, DHCP config, and deploy lab
+deploy: check dhcp-config ## Create disks, DHCP config, and deploy lab
 	$(SUDO) $(CLAB) deploy -t $(TOPO)
 
 destroy: ## Tear down the lab
