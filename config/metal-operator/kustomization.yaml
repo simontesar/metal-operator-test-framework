@@ -6,6 +6,15 @@ resources:
 - registry_service.yaml
 - macdb-secret.yaml
 
+configMapGenerator:
+- name: ignition-template
+  namespace: metal-operator-system
+  files:
+  - ignition-template.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
 patches:
 - path: manager_patch.yaml
 - path: metaldata_patch.yaml

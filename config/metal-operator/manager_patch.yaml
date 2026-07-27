@@ -27,8 +27,14 @@ spec:
         volumeMounts:
         - mountPath: /etc/macdb/
           name: macdb
+        - mountPath: /etc/metal-operator
+          name: ignition-template
+          readOnly: true
       volumes:
       - name: macdb
         secret:
           defaultMode: 420
           secretName: macdb
+      - name: ignition-template
+        configMap:
+          name: ignition-template
