@@ -1,0 +1,12 @@
+server4:
+  listen:
+    - "%eth2"
+  plugins:
+    - server_id: 10.250.200.2
+    - lease_time: 24h
+    - netmask: 255.255.255.0
+    - router: 10.250.200.2
+    - dns: 1.1.1.1 8.8.8.8
+    - range: /var/lib/fedhcp/leases.db 10.250.200.10 10.250.200.50 24h
+    - pxeboot: /etc/fedhcp/pxeboot_config.yaml
+    - httpboot: /etc/fedhcp/httpboot_config.yaml

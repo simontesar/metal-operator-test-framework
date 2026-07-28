@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- ../../../boot-operator/config/default
+- service.yaml
+
+patches:
+- path: manager_patch.yaml
+
+images:
+- name: controller
+  newName: boot-controller
+  newTag: latest

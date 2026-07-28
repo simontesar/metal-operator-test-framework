@@ -1,0 +1,2 @@
+bootFile: http://boot-registry.boot-operator-system.svc:8082/httpboot
+clientSpecific: true

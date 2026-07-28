@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller-manager
+  namespace: system
+spec:
+  template:
+    spec:
+      containers:
+      - name: manager
+        imagePullPolicy: IfNotPresent
+        args:
+        - --leader-elect
+        - --metrics-bind-address=:8443
+        - --health-probe-bind-address=:8081
+        - --mac-prefixes-file=/etc/macdb/mac_prefixes.yaml
+        - --probe-image=ghcr.io/ironcore-dev/metalprobe:latest
+        #- --probe-os-image=ghcr.io/ironcore-dev/gardenlinux:2150.0.0-metal-manual-a0ea39fa
+        - --probe-os-image=ghcr.io/ironcore-dev/gardenlinux/capi:2150.0.0-metal
+        - --registry-url=http://10.250.200.2:30000
+        - --registry-port=30000
+        - --skip-cert-validation
+        ports:
+        - containerPort: 8081
+          name: health
+          protocol: TCP
+        - containerPort: 30000
+        volumeMounts:
+        - mountPath: /etc/macdb/
+          name: macdb
+        - mountPath: /etc/metal-operator
+          name: ignition-template
+          readOnly: true
+      volumes:
+      - name: macdb
+        secret:
+          defaultMode: 420
+          secretName: macdb
+      - name: ignition-template
+        configMap:
+          name: ignition-template
