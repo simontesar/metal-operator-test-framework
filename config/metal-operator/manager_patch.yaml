@@ -15,7 +15,8 @@ spec:
         - --health-probe-bind-address=:8081
         - --mac-prefixes-file=/etc/macdb/mac_prefixes.yaml
         - --probe-image=ghcr.io/ironcore-dev/metalprobe:latest
-        - --probe-os-image=ghcr.io/ironcore-dev/gardenlinux:2150.4.0-metal
+        #- --probe-os-image=ghcr.io/ironcore-dev/gardenlinux:2150.0.0-metal-manual-a0ea39fa
+        - --probe-os-image=ghcr.io/ironcore-dev/gardenlinux/capi:2150.0.0-metal
         - --registry-url=http://10.250.200.2:30000
         - --registry-port=30000
         - --skip-cert-validation
