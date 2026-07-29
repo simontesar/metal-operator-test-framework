@@ -35,7 +35,7 @@ spec:
               status:
                 state: Available
                 powerState: "Off"
-                (processors[?id != null]):
+                (processors[?id != null] || `[]`):
                   (length(@) > `0`): true
                 (networkInterfaces[?name == 'eth0']):
                   - (carrierStatus != null): true
