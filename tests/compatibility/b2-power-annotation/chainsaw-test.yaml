@@ -17,7 +17,6 @@ spec:
     - name: assert-bmc-enabled
       try:
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: BMC
@@ -28,7 +27,6 @@ spec:
     - name: assert-server-available
       try:
         - assert:
-            timeout: 2m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -43,7 +41,6 @@ spec:
         - apply:
             file: ../resources/serverclaim.yaml
         - assert:
-            timeout: 5m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -63,7 +60,6 @@ spec:
                 annotations:
                   metal.ironcore.dev/operation: force-on-server
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -83,7 +79,6 @@ spec:
                 annotations:
                   metal.ironcore.dev/operation: graceful-restart-server
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -103,7 +98,6 @@ spec:
                 annotations:
                   metal.ironcore.dev/operation: power-cycle-server
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -125,7 +119,6 @@ spec:
                 annotations:
                   metal.ironcore.dev/operation: force-off-server
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
