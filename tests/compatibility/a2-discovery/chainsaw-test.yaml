@@ -37,6 +37,6 @@ spec:
                 powerState: "Off"
                 (processors[?id != null] || `[]`):
                   (length(@) > `0`): true
-                (networkInterfaces[?name == 'eth0']):
-                  - (carrierStatus != null): true
+                (networkInterfaces[0]):
+                  (carrierStatus != null): true
                 (totalSystemMemory != null): true
