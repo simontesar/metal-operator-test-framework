@@ -16,7 +16,6 @@ spec:
     - name: assert-bmc-enabled
       try:
         - assert:
-            timeout: 2m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: BMC

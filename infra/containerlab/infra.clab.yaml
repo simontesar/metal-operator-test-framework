@@ -11,7 +11,7 @@ topology:
   groups:
     workers:
       kind: linux
-      image: ghcr.io/tjst-t/qemu-bmc:latest
+      image: qemu-bmc:latest
       devices:
         - /dev/net/tun:/dev/net/tun
       cap-add:
