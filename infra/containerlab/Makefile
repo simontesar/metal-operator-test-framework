@@ -28,7 +28,7 @@ BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
 
-.PHONY: help dhcp-config deploy destroy inspect check \
+.PHONY: help dhcp-config deploy destroy clean-disks inspect check \
 	cert-manager-install cert-manager-wait \
 	metal-operator-images metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
@@ -62,6 +62,12 @@ deploy: check dhcp-config ## Create disks, DHCP config, and deploy lab
 
 destroy: ## Tear down the lab
 	$(SUDO) $(CLAB) destroy -t $(TOPO) --cleanup
+
+clean-disks: ## Remove per-node VM disks and OVMF_VARS files
+	@for node in $(NODES); do \
+		$(SUDO) rm -f $(VM_DIR)/$$node/disk.qcow2 \
+			$(VM_DIR)/$$node/OVMF_VARS.fd; \
+	done
 
 inspect: ## Show lab status
 	$(CLAB) inspect -t $(TOPO)

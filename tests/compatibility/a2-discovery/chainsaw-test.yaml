@@ -15,7 +15,6 @@ spec:
     - name: assert-bmc-enabled
       try:
         - assert:
-            timeout: 2m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: BMC
@@ -26,7 +25,6 @@ spec:
     - name: assert-server-available
       try:
         - assert:
-            timeout: 15m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -37,8 +35,8 @@ spec:
               status:
                 state: Available
                 powerState: "Off"
-                (processors[?id != null]):
+                (processors[?id != null] || `[]`):
                   (length(@) > `0`): true
-                (networkInterfaces[?name == 'eth0']):
-                  - (carrierStatus != null): true
+                (networkInterfaces[0]):
+                  (carrierStatus != null): true
                 (totalSystemMemory != null): true

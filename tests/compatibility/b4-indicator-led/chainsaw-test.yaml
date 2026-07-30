@@ -17,7 +17,6 @@ spec:
     - name: assert-bmc-enabled
       try:
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: BMC
@@ -28,7 +27,6 @@ spec:
     - name: assert-server-available
       try:
         - assert:
-            timeout: 2m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -49,7 +47,6 @@ spec:
     - name: assert-led-lit
       try:
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
@@ -70,7 +67,6 @@ spec:
     - name: assert-led-off
       try:
         - assert:
-            timeout: 1m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
