@@ -13,7 +13,7 @@ KUBECTL    ?= kubectl
 BMC_STACK ?= config/bmc
 
 METAL_OPERATOR_DIR ?= ../../../metal-operator
-METAL_OPERATOR_STACK ?= ../../config/metal-operator
+METAL_OPERATOR_STACK ?= config/metal-operator
 BOOT_OPERATOR_DIR ?= ../../../boot-operator
 BOOT_OPERATOR_STACK ?= ../../config/boot-operator
 FEDHCP_DIR ?= ../../../FeDHCP
