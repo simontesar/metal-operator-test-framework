@@ -17,6 +17,14 @@ rules:
 - apiGroups:
   - metal.ironcore.dev
   resources:
+  - serverbootconfigurations/status
+  verbs:
+  - get
+  - update
+  - patch
+- apiGroups:
+  - metal.ironcore.dev
+  resources:
   - servers
   verbs:
   - get
