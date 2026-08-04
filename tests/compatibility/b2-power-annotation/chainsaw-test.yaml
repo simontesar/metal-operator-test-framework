@@ -1,6 +1,4 @@
 # B2 — Power operations via operation annotation
-# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
-# - Claims the Server to avoid it being forced off by the operator
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:

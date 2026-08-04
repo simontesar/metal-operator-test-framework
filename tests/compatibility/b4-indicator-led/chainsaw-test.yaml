@@ -1,5 +1,4 @@
-# B4 — Indicator LED (see cases.md)
-# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
+# B4 — Indicator LED
 # - Kept as a separate test to be skippable for models that do not support LED control
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
