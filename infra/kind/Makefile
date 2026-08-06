@@ -21,6 +21,7 @@ REDFISH_MOCKUPS_STACK ?= ../../config/redfish-mockups/instances
 
 .PHONY: help deploy destroy \
 	kind-create kind-delete \
+	download-redfish-mockup-clients \
 	cert-manager-install cert-manager-wait \
 	metal-operator-images metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
@@ -58,7 +59,10 @@ help: ## Show available targets
 	@grep -E '^[a-zA-Z0-9_.-]+:.*##' $(MAKEFILE_LIST) | \
 		awk 'BEGIN {FS = ":.*## "}; {printf "  %-24s %s\n", $$1, $$2}'
 
-kind-create: ## Create the local kind cluster, mounting REDFISH_CLIENTS_DIR
+download-redfish-mockup-clients: ## Download and extract Dell iDRAC Redfish mockup client data
+	./scripts/download-redfish-mockup-clients.sh $(REDFISH_CLIENTS_DIR)
+
+kind-create: download-redfish-mockup-clients ## Create the local kind cluster
 	@kind get clusters 2>/dev/null | grep -qx "$(KIND_CLUSTER_NAME)" || \
 		printf 'kind: Cluster\napiVersion: kind.x-k8s.io/v1alpha4\nnodes:\n- role: control-plane\n  extraMounts:\n  - hostPath: %s\n    containerPath: /redfish-clients\n    readOnly: true\n' "$(REDFISH_CLIENTS_DIR)" | \
 		kind create cluster --name $(KIND_CLUSTER_NAME) --config=-
