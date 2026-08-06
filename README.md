@@ -7,21 +7,21 @@ The `tests/compatibility` directory contains a suite of compatibility tests base
 * [chainsaw](https://kyverno.github.io/chainsaw/latest/)
 
 ### Usage
-The server to run a test against is configured by passing a values file to chainsaw. The default file is `basic-go` that points to a redfish mock setup in the `kind` environment and can be overridden via `COMPATIBILITY_VALUES`.
+The server to run a test against is configured by passing a values file to chainsaw. The default file is `infra/kind/values-basic-go.yaml` that points to a redfish mock setup in the `kind` environment and can be overridden via `COMPATIBILITY_VALUES`.
 
 ```bash
-make test-compatibility                                            # Run all tests
-make test-compatibility-b                                          # Run a specific category of tests
-make test-compatibility-a1                                         # Run a specific case
-make test-compatibility-b2 COMPATIBILITY_VALUES=containerlab-node1 # Run against a specific BMC.
+make test-compatibility                                                                    # Run all tests
+make test-compatibility-b                                                                  # Run a specific category of tests
+make test-compatibility-a1                                                                 # Run a specific case
+make test-compatibility-b2 COMPATIBILITY_VALUES=infra/containerlab/values-containerlab-node1.yaml # Run against a specific BMC.
 ```
 
 ### Predefined values
-A set of predefinied values that point to BMCs deployed via this repository also exist in the test directory:
-- `tests/compatibility/values-basic-go.yaml`
-- `tests/compatibility/values-contoso-go.yaml`
-- `tests/compatibility/values-containerlab-node1.yaml`
-- `tests/compatibility/values-containerlab-node1.yaml`
+A set of predefined values that point to BMCs deployed via this repository exist in their respective environment's directories:
+- `infra/kind/values-basic-go.yaml`
+- `infra/kind/values-contoso-go.yaml`
+- `infra/containerlab/values-containerlab-node1.yaml`
+- `infra/containerlab/values-containerlab-node2.yaml`
 
 ## Environments
 This repository contains three virtualized or containerised infrastructure environments that mock or emulate pyhsical BMC/server nodes. Refer to the `make help` target in every environments subdirectory for usage.
