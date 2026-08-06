@@ -1,9 +1,3 @@
-# Values for containerlab infra qemu-bmc node1 (infra/containerlab).
-# Select with COMPATIBILITY_VALUES=containerlab-node1.
-# OOB Redfish at 172.16.100.11:443 (https). Credentials match IPMI_USER/PASS.
-# model and firmwareVersion match qemu-bmc's Manager resource
-# (SYSTEM_MANAGER_MODEL/SYSTEM_FIRMWARE_VERSION defaults).
-# powerState matches BMC status (Manager is always On).
 bmcIP: "172.16.100.11"
 bmcPort: 443
 bmcScheme: https

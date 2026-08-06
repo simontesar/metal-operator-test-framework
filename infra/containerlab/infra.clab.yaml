@@ -1,8 +1,5 @@
-# Dell infra lab: dual OOB/IB buses with qemu-bmc workers.
-# See infra/network-architecture.drawio and the containerlab plan.
 name: dell-infra
 
-# Avoid default 172.20.20.0/24 which overlaps Kind's 172.20.0.0/16.
 mgmt:
   network: dell-infra
   ipv4-subnet: 172.30.30.0/24
@@ -106,7 +103,7 @@ topology:
     - endpoints: ["ib-switch:eth2", "node1:eth2"]
     - endpoints: ["ib-switch:eth3", "node2:eth2"]
     - endpoints: ["ib-switch:eth4", "k8s-control-plane:eth2"]
-    # Optional upstream host links (disabled by default):
+    # Optional upstream host links
     # - type: host
     #   endpoint:
     #     node: k8s-control-plane

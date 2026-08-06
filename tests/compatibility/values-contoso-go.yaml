@@ -1,8 +1,3 @@
-# Values for the Go contoso Redfish mock (make go-mock-apply-contoso).
-# Select with COMPATIBILITY_VALUES=contoso-go.
-# Embedded Contoso data, so dynamic features (power/BMC reset, LED) work.
-# Service ClusterIP 10.96.200.26, port 8000, scheme http.
-# Status field values match what metal-operator reports for this mock.
 bmcIP: "10.96.200.26"
 bmcPort: 8000
 bmcScheme: http

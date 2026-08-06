@@ -1,5 +1,4 @@
 # B3 — BMC reset (see cases.md)
-# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
 # - Should be extended to asser status.lastResetTime once testing agains physical servers
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test

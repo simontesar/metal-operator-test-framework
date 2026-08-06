@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Generate FeDHCP's static MAC->IP leases file matching qemu-bmc guest MACs.
-# MAC algorithm mirrors qemu-bmc/docker/setup-network.sh generate_mac().
+# MAC algorithm is taken from qemu-bmc/docker/setup-network.sh generate_mac().
 #
 # OOB BMC addresses are static on the qemu-bmc containers' eth1 and are not
 # leased. Only guest IB NICs (VM_NETWORKS=eth2) use DHCP.
@@ -38,4 +38,3 @@ EOF
 echo "Wrote ${OUT}"
 echo "  node1 IB ${NODE1_IB_MAC} -> 10.250.200.11"
 echo "  node2 IB ${NODE2_IB_MAC} -> 10.250.200.12"
-echo "  BMC OOB is static: node1=172.16.100.11 node2=172.16.100.12"

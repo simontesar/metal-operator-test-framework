@@ -1,5 +1,4 @@
 # B1 — Power on/off via Server spec
-# - Requires a mock with working dynamic features enabled and shorter reboot timeouts
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
