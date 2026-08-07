@@ -5,7 +5,7 @@ The kind-based setup runs the following services in the cluster itself:
 * One instance of the modified metal-operator BMC mock server for every set of Dell client data
 * The `metalprobe-mock-controller` that simulates booting for a theoretical server attached to every BMC mock server by watching for `ServerBootConfigurations` and starting a `metalprobe` agent for every instance to mimic a real server reporting back data to the metal-operator's registry
 
-Per default one BMC resource for every Dell mock server instance is created in the cluster.
+By default one BMC resource for every Dell mock server instance is created in the cluster.
 
 ## Usage
 Deploy and inspect the complete setup:

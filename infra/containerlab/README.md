@@ -11,7 +11,7 @@ The containerlab setup runs the following services:
 The environment supports booting via PXE and httpboot.
 ## Usage
 ```shell
-# Deploy and run the all services
+# Deploy and run all services
 $ make deploy metal-operator-deploy-wait boot-operator-deploy-wait fedhcp-deploy-wait tftp-deploy-wait
 …
 # Inspect the architecture
@@ -40,7 +40,7 @@ $  containerlab inspect
 ╰─────────────────────────────────────┴──────────────────────┴───────────┴───────────────────────╯
 ```
 
-Once you start a test the machines should boot and their consoles be accessible at the respective URLs:
+Once you start a test the machines should boot and their consoles should be accessible at the respective URLs:
 * https://localhost:4431/novnc/vnc.html
 * https://localhost:4432/novnc/vnc.html
 
@@ -52,11 +52,11 @@ $ export KUBECONFIG=$PWD/infra/containerlab/kubeconfig.yaml
 $ make test-compatibility-b1 COMPATIBILITY_VALUES=infra/containerlab/values-containerlab-node1.yaml CHAINSAW_EXTRA_FLAGS="--pause-on-failure"
 ```
 
-Tear down the setup and optionally remove the VMs disks:
+Tear down the setup and optionally remove the VMs' disks:
 ```shell
 $ make destroy clean-disks
 …
 ``` 
 
 ## Caveats
-* Needs `sudo` at some point during deployment to chmod the `kind`-clusters kubeconfig accordingly
+* Needs `sudo` at some point during deployment to chmod the `kind` cluster's kubeconfig accordingly
