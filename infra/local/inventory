@@ -1,5 +1,0 @@
-[master]
-master ansible_host=192.168.121.95 ansible_user=vagrant ansible_private_key_file=.vagrant/machines/master/libvirt/private_key
-
-[master:vars]
-ansible_ssh_common_args=-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
