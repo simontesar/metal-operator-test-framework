@@ -1,3 +1,9 @@
+SHELL=/usr/bin/env bash
+
+# Always use the kubeconfig next to this Makefile so kind and kubectl
+# targets share a cluster-local config and do not touch ~/.kube/config.
+export KUBECONFIG := $(CURDIR)/kubeconfig.yaml
+
 KUSTOMIZE ?= kustomize
 KUBECTL   ?= kubectl
 
@@ -69,6 +75,7 @@ kind-create: download-redfish-mockup-clients ## Create the local kind cluster
 
 kind-delete: ## Destroy the local kind cluster
 	kind delete cluster --name $(KIND_CLUSTER_NAME)
+	rm -f $(KUBECONFIG)
 
 cert-manager-install: ## Install cert-manager from upstream release manifest
 	$(KUBECTL) apply -f $(CERT_MANAGER_MANIFEST)
