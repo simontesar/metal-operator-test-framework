@@ -1,7 +1,7 @@
-name: dell-infra
+name: metal-operator-test
 
 mgmt:
-  network: dell-infra
+  network: metal-operator-test
   ipv4-subnet: 172.30.30.0/24
 
 topology:
