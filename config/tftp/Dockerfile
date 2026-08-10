@@ -1,6 +1,5 @@
 FROM alpine:3.22
 
-# Guests are OVMF x86_64
 RUN apk add --no-cache dnsmasq curl \
 	&& mkdir -p /usr/share/ipxe \
 	&& curl -fsSL -o /usr/share/ipxe/ipxe.efi \

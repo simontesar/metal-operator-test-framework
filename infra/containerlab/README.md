@@ -44,7 +44,7 @@ Once you start a test the machines should boot and their consoles should be acce
 * https://localhost:4431/novnc/vnc.html
 * https://localhost:4432/novnc/vnc.html
 
-Note that the "connect" button will not display a screen until the machine is booted.
+Use the default `admin`/`password` credentials. Note that the "connect" button will not display a screen until the machine is booted.
 
 ```shell
 $ cd ../..

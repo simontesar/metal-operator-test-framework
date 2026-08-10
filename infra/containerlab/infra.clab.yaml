@@ -95,11 +95,11 @@ topology:
         - ip link set eth2 up
 
   links:
-    # OOB bus (VLAN 100 / 172.16.100.0/24)
+    # OOB network (172.16.100.0/24)
     - endpoints: ["oob-switch:eth2", "node1:eth1"]
     - endpoints: ["oob-switch:eth3", "node2:eth1"]
     - endpoints: ["oob-switch:eth4", "k8s-control-plane:eth1"]
-    # IB bus (VLAN 200 / 10.250.200.0/24)
+    # IB network (10.250.200.0/24)
     - endpoints: ["ib-switch:eth2", "node1:eth2"]
     - endpoints: ["ib-switch:eth3", "node2:eth2"]
     - endpoints: ["ib-switch:eth4", "k8s-control-plane:eth2"]
