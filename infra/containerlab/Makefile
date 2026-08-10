@@ -58,8 +58,8 @@ dhcp-config: ## Regenerate ../../config/fedhcp/leases_v4.txt from SYSTEM_UUID MA
 	./scripts/gen-dhcp-leases.sh
 
 deploy: check dhcp-config ## Create disks, DHCP config, and deploy lab
+	touch $(KUBECONFIG) # Initialises the kubeconfig with users' permissions
 	$(SUDO) $(CLAB) deploy -t $(TOPO)
-	sudo chmod 755 $(KUBECONFIG)
 
 destroy: ## Tear down the lab
 	$(SUDO) $(CLAB) destroy -t $(TOPO) --cleanup

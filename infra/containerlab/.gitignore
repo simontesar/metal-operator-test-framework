@@ -1,2 +1,3 @@
 .envrc
 vm
+kubeconfig.yaml
