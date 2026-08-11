@@ -1,9 +1,10 @@
 //go:build linux
 
 // Command metalprobe-launcher runs as PID 1 in the metalprobe u-root
-// initramfs. It configures networking via DHCP, fetches the per-server
-// metalprobe flags via the boot-operator-served Ignition document, then runs
-// metalprobe as a child process.
+// initramfs. It watches for ACPI power-button events (see acpi.go),
+// configures networking via DHCP, fetches the per-server metalprobe flags
+// via the boot-operator-served Ignition document, then runs metalprobe as a
+// child process.
 //
 // metalprobe itself is not run as PID 1: its main() calls os.Exit(1) on a
 // failed initial registration, which would panic the kernel if it were PID 1.
@@ -97,6 +98,8 @@ func dhConfigure(ctx context.Context) error {
 
 func main() {
 	ctx := context.Background()
+
+	go watchACPIPowerButton()
 
 	ignitionURL, _ := cmdline.Flag("ignition.config.url")
 	if ignitionURL == "" {

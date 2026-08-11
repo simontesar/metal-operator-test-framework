@@ -7,6 +7,7 @@ require (
 	github.com/ironcore-dev/metal-operator v0.6.2
 	github.com/u-root/u-root v0.16.0
 	github.com/vincent-petithory/dataurl v1.0.0
+	golang.org/x/sys v0.46.0
 )
 
 require (
@@ -87,7 +88,6 @@ require (
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/oauth2 v0.34.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
-	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/term v0.44.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.14.0 // indirect
