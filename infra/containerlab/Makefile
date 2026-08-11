@@ -15,7 +15,7 @@ BMC_STACK ?= config/bmc
 METAL_OPERATOR_DIR ?= ../../../metal-operator
 METAL_OPERATOR_STACK ?= config/metal-operator
 BOOT_OPERATOR_DIR ?= ../../../boot-operator
-BOOT_OPERATOR_STACK ?= ../../config/boot-operator
+BOOT_OPERATOR_STACK ?= config/boot-operator
 FEDHCP_DIR ?= ../../../FeDHCP
 FEDHCP_STACK ?= ../../config/fedhcp
 TFTP_STACK ?= ../../config/tftp
@@ -28,7 +28,11 @@ BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
 
-.PHONY: help dhcp-config deploy destroy clean-disks inspect check \
+METALPROBE_IMAGE_DIR  ?= metalprobe-image
+KERNEL_VERSION         ?= 6.12.100-1-cloud
+METALPROBE_BOOT_IMAGE  ?= ghcr.io/simontesar/dell:dev
+
+.PHONY: help deploy destroy clean-disks inspect check \
 	cert-manager-install cert-manager-wait \
 	metal-operator-images metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
@@ -36,7 +40,8 @@ TFTP_IMG ?= tftp:latest
 	boot-operator-deploy-wait \
 	fedhcp-images fedhcp-deploy fedhcp-delete fedhcp-deploy-wait \
 	tftp-images tftp-deploy tftp-delete tftp-deploy-wait \
-	bmc-apply bmc-delete
+	bmc-apply bmc-delete \
+	metalprobe-image-tools metalprobe-image-build metalprobe-image-push
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z0-9_.-]+:.*##' $(MAKEFILE_LIST) | \
@@ -205,3 +210,18 @@ bmc-apply: ## Apply BMC + BMCSecret for node1 and node2
 bmc-delete: ## Delete BMC + BMCSecret for node1 and node2
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \
 		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found
+
+metalprobe-image-tools: ## Install u-root, ironcore-image, and the kernel-fetch CLI
+	cd $(METALPROBE_IMAGE_DIR) && go install github.com/u-root/u-root@v0.16.0
+	cd $(METALPROBE_IMAGE_DIR) && go install github.com/ironcore-dev/ironcore-image/cmd/ironcore-image@v0.5.0
+	cd $(METALPROBE_IMAGE_DIR)/hack/kernel && go install .
+
+metalprobe-image-build: metalprobe-image-tools ## Build the metalprobe u-root boot image (kernel+initramfs)
+	cd $(METALPROBE_IMAGE_DIR) && ./hack/build.sh -k "$(KERNEL_VERSION)" \
+		-m failover -m net_failover -m virtio_net -m virtio_blk \
+		-m button -m evdev -o ./bin/initramfs.cpio
+	cd $(METALPROBE_IMAGE_DIR) && ironcore-image build --tag "$(METALPROBE_BOOT_IMAGE)" \
+		--config "arch=amd64,initramfs=./bin/initramfs.cpio,kernel=$$(kernel use "$(KERNEL_VERSION)" --dir ./bin -f path)/vmlinuz"
+
+metalprobe-image-push: ## Push the built metalprobe boot image (requires ghcr.io auth)
+	cd $(METALPROBE_IMAGE_DIR) && ironcore-image push "$(METALPROBE_BOOT_IMAGE)"
