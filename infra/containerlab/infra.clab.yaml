@@ -11,6 +11,7 @@ topology:
       image: qemu-bmc:latest
       devices:
         - /dev/net/tun:/dev/net/tun
+        - /dev/kvm:/dev/kvm
       cap-add:
         - NET_ADMIN
         - SYS_ADMIN
@@ -24,7 +25,7 @@ topology:
         VM_BOOT: cn
         IPMI_USER: admin
         IPMI_PASS: password
-        ENABLE_KVM: "false"
+        ENABLE_KVM: "true"
 
   nodes:
     node1:
