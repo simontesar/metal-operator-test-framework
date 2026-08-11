@@ -28,7 +28,7 @@ BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
 
-.PHONY: help dhcp-config deploy destroy clean-disks inspect check \
+.PHONY: help deploy destroy clean-disks inspect check \
 	cert-manager-install cert-manager-wait \
 	metal-operator-images metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
@@ -54,10 +54,7 @@ check: ## Fail if required tools are missing
 	@command -v $(KUBECTL) >/dev/null || \
 		{ echo "error: $(KUBECTL) not found" >&2; exit 1; }
 
-dhcp-config: ## Regenerate ../../config/fedhcp/leases_v4.txt from SYSTEM_UUID MACs
-	./scripts/gen-dhcp-leases.sh
-
-deploy: check dhcp-config ## Create disks, DHCP config, and deploy lab
+deploy: check ## Create disks and deploy lab
 	touch $(KUBECONFIG) # Initialises the kubeconfig with users' permissions
 	$(SUDO) $(CLAB) deploy -t $(TOPO)
 
