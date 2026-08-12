@@ -13,4 +13,3 @@ import (
 	_ "github.com/u-root/u-root/cmds/core/init"
 	_ "github.com/u-root/u-root/cmds/core/insmod"
 )
-n
