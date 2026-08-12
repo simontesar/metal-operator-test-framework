@@ -1,14 +1,10 @@
 //go:build linux
 
-// Command metalprobe-launcher runs as PID 1 in the metalprobe u-root
-// initramfs. It watches for ACPI power-button events (see acpi.go),
-// configures networking via DHCP, fetches the per-server metalprobe flags
-// via the boot-operator-served Ignition document, then runs metalprobe as a
-// child process.
-//
-// metalprobe itself is not run as PID 1: its main() calls os.Exit(1) on a
-// failed initial registration, which would panic the kernel if it were PID 1.
-// The launcher stays PID 1 and always parks (blocks forever) afterwards,
+// Command metalprobe-launcher runs as PID 1 in the metalprobe u-root initramfs.
+// It watches for ACPI power-button events, configures networking via DHCP,
+// fetches the metalprobe flags via Ignition and then runs metalprobe as a child
+// process. (Metalprobe is currently not importable from out of the
+// metal-operator project.) The launcher stays PID 1 and always blocks forever,
 // regardless of how metalprobe exited.
 package main
 
@@ -32,7 +28,7 @@ import (
 	"github.com/simontesar/metal-operator-test-framework/infra/containerlab/metalprobe-image/internal/ignitionshim"
 )
 
-func dhConfigure(ctx context.Context) error {
+func configureDHCP(ctx context.Context) error {
 	ifs, err := dhclient.Interfaces("^e.*")
 	if err != nil || len(ifs) == 0 {
 		allIfaces, _ := dhclient.Interfaces(".*")
@@ -103,20 +99,21 @@ func main() {
 
 	ignitionURL, _ := cmdline.Flag("ignition.config.url")
 	if ignitionURL == "" {
+		// Sollte hier weitermachen, auch ohne iginition url leben
 		park(fmt.Errorf("no ignition.config.url on kernel cmdline"))
 	}
 
 	dhcpCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-	err := dhConfigure(dhcpCtx)
+	err := configureDHCP(dhcpCtx)
 	cancel()
 	if err != nil {
-		park(fmt.Errorf("dhcp configure: %w", err))
+		park(fmt.Errorf("configuring DHCP: %w", err))
 	}
-	slog.Info("dhcp: configured")
+	slog.Info("configured DHCP")
 
 	rawFlags, err := ignitionshim.FetchFlags(ctx, ignitionURL)
 	if err != nil {
-		park(fmt.Errorf("fetch metalprobe config: %w", err))
+		park(fmt.Errorf("fetching metalprobe config: %w", err))
 	}
 
 	args := strings.Fields(rawFlags)
@@ -132,9 +129,7 @@ func main() {
 	park(nil)
 }
 
-// park blocks forever, since PID 1 must never return. It logs why it's
-// parking (error path vs. clean metalprobe exit) so the console/serial log
-// shows the actual failure instead of just an unexplained hang.
+// park blocks forever so that PID 1 does not return.
 func park(err error) {
 	if err != nil {
 		slog.Error("metalprobe-launcher parking after error", "error", err)
