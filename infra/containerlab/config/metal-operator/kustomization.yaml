@@ -24,4 +24,4 @@ patches:
       value: --registry-url=http://10.250.200.2:30000
     - op: replace
       path: /spec/template/spec/containers/0/args/5
-      value: --probe-os-image=ghcr.io/simontesar/dell:dev
+      value: --probe-os-image=ghcr.io/simontesar/metal-operator-test-framework:dev
