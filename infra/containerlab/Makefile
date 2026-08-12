@@ -27,6 +27,9 @@ METALDATA_IMG ?= metaldata:latest
 BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
+METALPROBE_IMAGE_DIR  ?= metalprobe-image
+KERNEL_VERSION         ?= 6.12.100-1-cloud
+METALPROBE_BOOT_IMAGE  ?= ghcr.io/simontesar/metal-operator-test-framework:dev
 
 .PHONY: help deploy destroy clean-disks inspect check \
 	cert-manager-install cert-manager-wait \
