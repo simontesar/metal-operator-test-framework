@@ -6,4 +6,3 @@ password: bar
 model: "15G Monolithic"
 firmwareVersion: "7.10.30.00"
 powerState: "On"
-image: "ghcr.io/ironcore-dev/gardenlinux:2150.4.0-metal-amd64"

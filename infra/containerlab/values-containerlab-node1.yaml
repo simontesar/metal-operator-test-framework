@@ -6,4 +6,3 @@ password: password
 model: "Standard PC (Q35 + ICH9, 2009)"
 firmwareVersion: "1.0.0"
 powerState: "On"
-image: "ghcr.io/ironcore-dev/gardenlinux/capi:2150.0.0-metal"

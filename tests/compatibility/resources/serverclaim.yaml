@@ -8,4 +8,4 @@ spec:
     name: (join('-', ['compatibility', $namespace, 'system-0']))
   ignitionSecretRef:
     name: (join('-', ['compatibility', $namespace, 'ignition']))
-  image: ($values.image)
+  image: ghcr.io/simontesar/metal-operator-test-framework:dev
