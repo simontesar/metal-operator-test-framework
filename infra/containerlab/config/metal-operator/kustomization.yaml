@@ -4,6 +4,16 @@ kind: Kustomization
 resources:
 - ../../../../config/metal-operator
 
+configMapGenerator:
+- name: ignition-template
+  namespace: metal-operator-system
+  behavior: replace
+  files:
+  - ignition-template.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
 patches:
 - target:
     kind: Deployment
@@ -12,3 +22,6 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/args/6
       value: --registry-url=http://10.250.200.2:30000
+    - op: replace
+      path: /spec/template/spec/containers/0/args/5
+      value: --probe-os-image=ghcr.io/simontesar/metal-operator-test-framework:dev

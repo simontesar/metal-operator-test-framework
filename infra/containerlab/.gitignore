@@ -1,3 +1,5 @@
 .envrc
 vm
 kubeconfig.yaml
+metalprobe-image/bin/
+

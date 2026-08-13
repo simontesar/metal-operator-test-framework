@@ -1,0 +1,16 @@
+variant: fcos
+version: "1.3.0"
+storage:
+  files:
+    - path: /metalprobe/config
+      mode: 0644
+      contents:
+        inline: "{{.Flags}}"
+passwd:
+  users:
+    - name: root
+      password_hash: "$6$U13XNGV9MMTY3xbZ$CoTJBLmGNKn7We/0FpgtURNGudhpKXm/S9E5qXa5hV4RXmnviJJXlKHuZwGSLU5ZxkI0PYMWk.coIjoVL1ADN0"
+    - name: metal
+      password_hash: {{.PasswordHash}}
+      groups: [ "wheel" ]
+      ssh_authorized_keys: [ {{.SSHPublicKey}} ]
