@@ -59,4 +59,5 @@ $ make destroy clean-disks
 ``` 
 
 ## Caveats
-* Needs `sudo` at some point during deployment to chmod the `kind` cluster's kubeconfig accordingly
+* HTTPBOOT is disabled because the boot image generated here in `metalprobe-image` is not exported in a format compatible with the `httpbootconfig`-controller of the metal-operator. There are efforts upstream in the `metal-operator` to build a `metalprobe`-image, so this is on hold for now.
+* The `metalprobe-image` build is heavily based on the [sanitizer build](https://github.com/ironcore-dev/metal-maintenance-operator/blob/main/.github/workflows/publish-sanitizer.yml) in the `metal-maintenance-operator` and copies tooling from there to download kernel and kernel modules from Debian. It should later be replaced by [kbake](https://github.com/ironcore-dev/kbake) for kernel compilation or an upstream metalprobe image.
