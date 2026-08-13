@@ -1,6 +1,7 @@
 CLAB     ?= clab
 QEMU_IMG ?= qemu-img
 TOPO     ?= infra.clab.yaml
+LAB_NAME ?= metal-operator-test
 DISK_SIZE ?= 20G
 NODES    ?= node1 node2
 VM_DIR   ?= vm
