@@ -1,10 +1,8 @@
 //go:build tools
 
-// Package cmds blank-imports every external command built into the
-// metalprobe u-root initramfs by hack/build.sh, purely to pin their modules
-// (and transitive dependencies, e.g. gosh's line-editing/shell deps) in
-// go.mod/go.sum so u-root's package resolution can find them at build time.
-// Mirrors metal-maintenance-operator/sanitizer/cmds/init.go.
+// Package cmds blank-imports every external command built into the initramfs by
+// hack/build.sh to pin their modules in so u-root's package resolution can find
+// them at build time
 package cmds
 
 import (
