@@ -1,30 +1,23 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-shopt -s extglob
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # Go to metalprobe-image root directory
 cd "$SCRIPT_DIR/.."
 
-KERNEL="${KERNEL:-kernel}"
 U_ROOT="${U_ROOT:-u-root}"
+KBAKE="${KBAKE:-kbake}"
 U_ROOT_PKG="$(go list -m -f "{{ .Dir }}" github.com/u-root/u-root)"
 
-KERNEL_MODULES=()
 ADDITIONAL_U_ROOT_OPTS=()
-KERNEL_VERSION=""
+KERNEL_TAG=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-  --kernel-version|-k)
-    KERNEL_VERSION="$2"
-    shift
-    shift
-    ;;
-  --kernel-module|-m)
-    KERNEL_MODULES+=("$2")
+  --kernel-tag|-k)
+    KERNEL_TAG="$2"
     shift
     shift
     ;;
@@ -44,37 +37,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ "$KERNEL_VERSION" == "" ]]; then
-  echo "Must specify --kernel-version"
+if [[ "$KERNEL_TAG" == "" ]]; then
+  echo "Must specify --kernel-tag"
   exit 1
 fi
 
-KERNEL_ASSETS="$("$KERNEL" use "$KERNEL_VERSION" --dir ./bin -f path)"
+mkdir -p ./bin
 
-LOAD_CMD=""
-
-if [[ ${#KERNEL_MODULES[@]} -gt 0 ]]; then
-  for KERNEL_MODULE in "${KERNEL_MODULES[@]}"; do
-    FILES=( "${KERNEL_ASSETS}/modules/${KERNEL_MODULE}".ko?(.xz) )
-    if [[ ${#FILES[@]} -eq 0 || ! -e ${FILES[0]} ]]; then
-      echo "No module file found for $KERNEL_MODULE"
-      exit 1
-    fi
-
-    FILE="${FILES[0]}"
-    FILENAME="$(basename "$FILE")"
-    INITRAMFS_PATH="modules/$FILENAME"
-    ADDITIONAL_U_ROOT_OPTS+=("-files=$FILE:$INITRAMFS_PATH")
-
-    LOAD_CMD="${LOAD_CMD}insmod /$INITRAMFS_PATH && "
-  done
-fi
+"$KBAKE" build . --arch amd64 -t "metalprobe-kernel:$KERNEL_TAG"
+"$KBAKE" get kernel "metalprobe-kernel:$KERNEL_TAG" -a amd64 -o ./bin/vmlinuz
 
 GOOS=linux CGO_ENABLED=0 "$U_ROOT" \
-  -uinitcmd="gosh -c '${LOAD_CMD}metalprobe-launcher'" \
+  -uinitcmd="metalprobe-launcher" \
+  -defaultsh="" \
   ${ADDITIONAL_U_ROOT_OPTS[@]+"${ADDITIONAL_U_ROOT_OPTS[@]}"} \
   "$U_ROOT_PKG"/cmds/core/init \
-  "$U_ROOT_PKG"/cmds/core/gosh \
-  "$U_ROOT_PKG"/cmds/core/insmod \
   github.com/ironcore-dev/metal-operator/cmd/metalprobe \
   ./cmd/metalprobe-launcher

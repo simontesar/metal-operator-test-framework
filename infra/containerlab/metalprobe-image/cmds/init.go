@@ -7,7 +7,5 @@ package cmds
 
 import (
 	_ "github.com/ironcore-dev/metal-operator/cmd/metalprobe"
-	_ "github.com/u-root/u-root/cmds/core/gosh"
 	_ "github.com/u-root/u-root/cmds/core/init"
-	_ "github.com/u-root/u-root/cmds/core/insmod"
 )
