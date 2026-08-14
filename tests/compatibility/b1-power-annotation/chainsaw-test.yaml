@@ -1,8 +1,8 @@
-# B2 — Power operations via operation annotation
+# B1 — Power operations via operation annotation
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: b2-power-annotation
+  name: b1-power-annotation
 spec:
   concurrent: false
   steps:

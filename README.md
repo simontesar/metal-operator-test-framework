@@ -13,7 +13,7 @@ The server to run a test against is configured by passing a values file to chain
 make test-compatibility                                                                    # Run all tests
 make test-compatibility-b                                                                  # Run a specific category of tests
 make test-compatibility-a1                                                                 # Run a specific case
-make test-compatibility-b2 COMPATIBILITY_VALUES=infra/containerlab/values-containerlab-node1.yaml # Run against a specific BMC.
+make test-compatibility-b1 COMPATIBILITY_VALUES=infra/containerlab/values-containerlab-node1.yaml # Run against a specific BMC.
 ```
 
 ### Predefined values
