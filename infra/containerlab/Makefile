@@ -30,7 +30,7 @@ BOOT_CONTROLLER_IMG ?= boot-controller:latest
 FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
 METALPROBE_IMAGE_DIR  ?= metalprobe-image
-KERNEL_VERSION         ?= 6.12.100-1-cloud
+KBAKE_KERNEL_TAG       ?= v7.1
 METALPROBE_BOOT_IMAGE  ?= ghcr.io/simontesar/metal-operator-test-framework:dev
 
 .PHONY: help deploy destroy clean-disks inspect check \
@@ -226,17 +226,15 @@ bmc-delete: ## Delete BMC + BMCSecret for node1 and node2
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BMC_STACK) | \
 		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) delete -f - --ignore-not-found
 
-metalprobe-image-tools: ## Install u-root, ironcore-image, and the kernel-fetch CLI
+metalprobe-image-tools: ## Install u-root, ironcore-image, and kbake
 	cd $(METALPROBE_IMAGE_DIR) && go install github.com/u-root/u-root@v0.16.0
 	cd $(METALPROBE_IMAGE_DIR) && go install github.com/ironcore-dev/ironcore-image/cmd/ironcore-image@v0.5.0
-	cd $(METALPROBE_IMAGE_DIR)/hack/kernel && go install .
+	cd $(METALPROBE_IMAGE_DIR) && go install github.com/ironcore-dev/kbake@5ec65c0d5d780e4a2c36c736c3684314c16250e6
 
 metalprobe-image-build: metalprobe-image-tools ## Build the metalprobe u-root boot image (kernel+initramfs)
-	cd $(METALPROBE_IMAGE_DIR) && ./hack/build.sh -k "$(KERNEL_VERSION)" \
-		-m failover -m net_failover -m virtio_net -m virtio_blk \
-		-m button -m evdev -o ./bin/initramfs.cpio
+	cd $(METALPROBE_IMAGE_DIR) && ./hack/build.sh -k "$(KBAKE_KERNEL_TAG)" -o ./bin/initramfs.cpio
 	cd $(METALPROBE_IMAGE_DIR) && ironcore-image build --tag "$(METALPROBE_BOOT_IMAGE)" \
-		--config "arch=amd64,initramfs=./bin/initramfs.cpio,kernel=$$(kernel use "$(KERNEL_VERSION)" --dir ./bin -f path)/vmlinuz"
+		--config "arch=amd64,initramfs=./bin/initramfs.cpio,kernel=./bin/vmlinuz"
 
 metalprobe-image-push: ## Push the built metalprobe boot image (requires ghcr.io auth)
 	cd $(METALPROBE_IMAGE_DIR) && ironcore-image push "$(METALPROBE_BOOT_IMAGE)"
