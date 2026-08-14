@@ -1,8 +1,9 @@
-# B1 — Power on/off via Server spec
+# B3 — Indicator LED
+# - Kept as a separate test to be skippable for models that do not support LED control
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: b1-power-spec
+  name: b3-indicator-led
 spec:
   concurrent: false
   steps:
@@ -32,7 +33,7 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
-    - name: power-on
+    - name: led-lit
       try:
         - patch:
             resource:
@@ -41,8 +42,8 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                power: "On"
-    - name: assert-power-on
+                indicatorLED: Lit
+    - name: assert-led-lit
       try:
         - assert:
             resource:
@@ -51,8 +52,8 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
-                powerState: "On"
-    - name: power-off
+                indicatorLED: Lit
+    - name: led-off
       try:
         - patch:
             resource:
@@ -61,8 +62,8 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                power: "Off"
-    - name: assert-power-off
+                indicatorLED: "Off"
+    - name: assert-led-off
       try:
         - assert:
             resource:
@@ -71,4 +72,4 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
-                powerState: "Off"
+                indicatorLED: "Off"

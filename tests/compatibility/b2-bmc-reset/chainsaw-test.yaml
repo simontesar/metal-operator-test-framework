@@ -1,9 +1,9 @@
-# B3 — BMC reset (see cases.md)
+# B2 — BMC reset (see cases.md)
 # - Should be extended to asser status.lastResetTime once testing agains physical servers
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: b3-bmc-reset
+  name: b2-bmc-reset
 spec:
   concurrent: false
   steps:

@@ -17,11 +17,10 @@ help: ## Show available targets
 	@echo "    test-compatibility           (A1, A2)"
 	@echo "    test-compatibility-a1"
 	@echo "    test-compatibility-a2"
-	@echo "    test-compatibility-b         (B1-B4)"
-	@echo "    test-compatibility-b1        (power on/off via Server spec)"
-	@echo "    test-compatibility-b2        (power ops via operation annotation)"
-	@echo "    test-compatibility-b3        (BMC reset)"
-	@echo "    test-compatibility-b4        (indicator LED)"
+	@echo "    test-compatibility-b         (B1-B3)"
+	@echo "    test-compatibility-b1        (power ops via operation annotation)"
+	@echo "    test-compatibility-b2        (BMC reset)"
+	@echo "    test-compatibility-b3        (indicator LED)"
 	@echo ""
 
 .PHONY: test-compatibility test-compatibility-a1 test-compatibility-a2
@@ -36,22 +35,18 @@ test-compatibility-a1: ## Run A1 BMC registration
 test-compatibility-a2: ## Run A2 discovery
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/a2-discovery
 
-.PHONY: test-compatibility-b test-compatibility-b1 test-compatibility-b2 test-compatibility-b3 test-compatibility-b4
-test-compatibility-b: ## Run all B power-management tests (B1-B4)
+.PHONY: test-compatibility-b test-compatibility-b1 test-compatibility-b2 test-compatibility-b3
+test-compatibility-b: ## Run all B power-management tests (B1-B3)
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
-		$(COMPATIBILITY_TEST_DIR)/b1-power-spec \
-		$(COMPATIBILITY_TEST_DIR)/b2-power-annotation \
-		$(COMPATIBILITY_TEST_DIR)/b3-bmc-reset \
-		$(COMPATIBILITY_TEST_DIR)/b4-indicator-led
+		$(COMPATIBILITY_TEST_DIR)/b1-power-annotation \
+		$(COMPATIBILITY_TEST_DIR)/b2-bmc-reset \
+		$(COMPATIBILITY_TEST_DIR)/b3-indicator-led
 
-test-compatibility-b1: ## Run B1 power on/off via Server spec
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b1-power-spec
+test-compatibility-b1: ## Run B1 power operations via operation annotation
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b1-power-annotation
 
-test-compatibility-b2: ## Run B2 power operations via operation annotation
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b2-power-annotation
+test-compatibility-b2: ## Run B2 BMC reset
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b2-bmc-reset
 
-test-compatibility-b3: ## Run B3 BMC reset
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b3-bmc-reset
-
-test-compatibility-b4: ## Run B4 indicator LED
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b4-indicator-led
+test-compatibility-b3: ## Run B3 indicator LED
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b3-indicator-led
