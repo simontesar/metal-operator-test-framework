@@ -26,6 +26,7 @@ topology:
         IPMI_USER: admin
         IPMI_PASS: password
         ENABLE_KVM: "true"
+        GRACEFUL_SHUTDOWN_TIMEOUT: 15s
 
   nodes:
     node1:
