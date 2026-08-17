@@ -20,6 +20,7 @@ spec:
         - --registry-url=http://metal-registry.metal-operator-system.svc:30000
         - --registry-port=30000
         - --skip-cert-validation
+        - --bmc-reset-waiting-interval=1s
         ports:
         - containerPort: 8081
           name: health
