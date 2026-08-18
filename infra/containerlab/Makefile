@@ -18,7 +18,6 @@ METAL_OPERATOR_DIR ?= ../../../metal-operator
 METAL_OPERATOR_STACK ?= config/metal-operator
 BOOT_OPERATOR_DIR ?= ../../../boot-operator
 BOOT_OPERATOR_STACK ?= config/boot-operator
-FEDHCP_DIR ?= ../../../FeDHCP
 FEDHCP_STACK ?= ../../config/fedhcp
 TFTP_STACK ?= ../../config/tftp
 CERT_MANAGER_VERSION ?= v1.17.1
@@ -27,7 +26,6 @@ KIND_CLUSTER_NAME ?= k8s
 CONTROLLER_IMG ?= controller:latest
 METALDATA_IMG ?= metaldata:latest
 BOOT_CONTROLLER_IMG ?= boot-controller:latest
-FEDHCP_IMG ?= fedhcp:latest
 TFTP_IMG ?= tftp:latest
 METALPROBE_IMAGE_DIR  ?= metalprobe-image
 KBAKE_KERNEL_TAG       ?= v7.1
@@ -39,7 +37,7 @@ METALPROBE_BOOT_IMAGE  ?= ghcr.io/simontesar/metal-operator-test-framework:dev
 	metal-operator-deploy-wait \
 	boot-operator-images boot-operator-deploy boot-operator-delete \
 	boot-operator-deploy-wait \
-	fedhcp-images fedhcp-deploy fedhcp-delete fedhcp-deploy-wait \
+	fedhcp-deploy fedhcp-delete fedhcp-deploy-wait \
 	tftp-images tftp-deploy tftp-delete tftp-deploy-wait \
 	bmc-apply bmc-delete \
 	metalprobe-image-tools metalprobe-image-build metalprobe-image-push \
@@ -164,11 +162,6 @@ boot-operator-deploy-wait: metal-operator-deploy-wait \
 		deployment/boot-operator-controller-manager \
 		-n boot-operator-system --timeout=600s
 
-fedhcp-images: ## Build and load the FeDHCP image into Kind
-	docker build -t $(FEDHCP_IMG) $(FEDHCP_DIR)
-	kind load docker-image $(FEDHCP_IMG) \
-		--name $(KIND_CLUSTER_NAME)
-
 fedhcp-deploy: ## Deploy FeDHCP via kustomize overlay
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(FEDHCP_STACK) | \
 		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
@@ -179,7 +172,7 @@ fedhcp-delete: ## Delete FeDHCP kustomize overlay
 
 fedhcp-deploy-wait: ## Deploy FeDHCP (after TFTP), then wait
 fedhcp-deploy-wait: tftp-deploy-wait \
-	fedhcp-images fedhcp-deploy
+	fedhcp-deploy
 	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns fedhcp-system >/dev/null 2>&1; do \
 		echo "Waiting for fedhcp-system namespace..."; sleep 5; \
 	done

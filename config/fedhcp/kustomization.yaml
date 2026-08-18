@@ -16,5 +16,5 @@ configMapGenerator:
 
 images:
 - name: fedhcp
-  newName: fedhcp
-  newTag: latest
+  newName: ghcr.io/simontesar/fedhcp
+  newTag: simt-fork
