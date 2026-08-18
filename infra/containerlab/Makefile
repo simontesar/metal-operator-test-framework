@@ -14,18 +14,13 @@ KUSTOMIZE  ?= kustomize
 KUBECTL    ?= kubectl
 BMC_STACK ?= config/bmc
 
-METAL_OPERATOR_DIR ?= ../../../metal-operator
 METAL_OPERATOR_STACK ?= config/metal-operator
-BOOT_OPERATOR_DIR ?= ../../../boot-operator
 BOOT_OPERATOR_STACK ?= config/boot-operator
 FEDHCP_STACK ?= ../../config/fedhcp
 TFTP_STACK ?= ../../config/tftp
 CERT_MANAGER_VERSION ?= v1.17.1
 CERT_MANAGER_MANIFEST ?= https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
 KIND_CLUSTER_NAME ?= k8s
-CONTROLLER_IMG ?= controller:latest
-METALDATA_IMG ?= metaldata:latest
-BOOT_CONTROLLER_IMG ?= boot-controller:latest
 TFTP_IMG ?= tftp:latest
 METALPROBE_IMAGE_DIR  ?= metalprobe-image
 KBAKE_KERNEL_TAG       ?= v7.1
@@ -33,9 +28,9 @@ METALPROBE_BOOT_IMAGE  ?= ghcr.io/simontesar/metal-operator-test-framework:dev
 
 .PHONY: help deploy destroy clean-disks inspect check \
 	cert-manager-install cert-manager-wait \
-	metal-operator-images metal-operator-deploy metal-operator-delete \
+	metal-operator-deploy metal-operator-delete \
 	metal-operator-deploy-wait \
-	boot-operator-images boot-operator-deploy boot-operator-delete \
+	boot-operator-deploy boot-operator-delete \
 	boot-operator-deploy-wait \
 	fedhcp-deploy fedhcp-delete fedhcp-deploy-wait \
 	tftp-images tftp-deploy tftp-delete tftp-deploy-wait \
@@ -105,14 +100,7 @@ cert-manager-wait: ## Wait for cert-manager deployments to become available
 	KUBECONFIG=$(KUBECONFIG) $(KUBECTL) wait --for=condition=Available \
 		deployment/cert-manager-cainjector -n cert-manager --timeout=300s
 
-metal-operator-images: ## Build and load controller/metaldata images into Kind
-	$(MAKE) -C $(METAL_OPERATOR_DIR) docker-build \
-		CONTROLLER_IMG=$(CONTROLLER_IMG) METALDATA_IMG=$(METALDATA_IMG)
-	kind load docker-image $(CONTROLLER_IMG) $(METALDATA_IMG) \
-		--name $(KIND_CLUSTER_NAME)
-
 metal-operator-deploy: ## Deploy metal-operator via kustomize overlay
-	$(MAKE) -C $(METAL_OPERATOR_DIR) manifests
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(METAL_OPERATOR_STACK) | \
 		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
 
@@ -122,7 +110,7 @@ metal-operator-delete: ## Delete metal-operator kustomize overlay
 
 metal-operator-deploy-wait: ## Install cert-manager and metal-operator, then wait
 metal-operator-deploy-wait: cert-manager-install cert-manager-wait \
-	metal-operator-images metal-operator-deploy
+	metal-operator-deploy
 	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns metal-operator-system >/dev/null 2>&1; do \
 		echo "Waiting for metal-operator-system namespace..."; sleep 5; \
 	done
@@ -134,13 +122,7 @@ metal-operator-deploy-wait: cert-manager-install cert-manager-wait \
 		deployment/metal-operator-controller-manager \
 		-n metal-operator-system --timeout=600s
 
-boot-operator-images: ## Build and load boot-operator controller image into Kind
-	$(MAKE) -C $(BOOT_OPERATOR_DIR) docker-build IMG=$(BOOT_CONTROLLER_IMG)
-	kind load docker-image $(BOOT_CONTROLLER_IMG) \
-		--name $(KIND_CLUSTER_NAME)
-
 boot-operator-deploy: ## Deploy boot-operator via kustomize overlay
-	$(MAKE) -C $(BOOT_OPERATOR_DIR) manifests
 	KUBECONFIG=$(KUBECONFIG) $(KUSTOMIZE) build $(BOOT_OPERATOR_STACK) | \
 		KUBECONFIG=$(KUBECONFIG) $(KUBECTL) apply -f -
 
@@ -150,7 +132,7 @@ boot-operator-delete: ## Delete boot-operator kustomize overlay
 
 boot-operator-deploy-wait: ## Deploy boot-operator (after metal-operator), then wait
 boot-operator-deploy-wait: metal-operator-deploy-wait \
-	boot-operator-images boot-operator-deploy
+	boot-operator-deploy
 	@until KUBECONFIG=$(KUBECONFIG) $(KUBECTL) get ns boot-operator-system >/dev/null 2>&1; do \
 		echo "Waiting for boot-operator-system namespace..."; sleep 5; \
 	done

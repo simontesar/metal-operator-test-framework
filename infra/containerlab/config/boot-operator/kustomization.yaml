@@ -12,3 +12,8 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/args/3
       value: --controllers=serverbootconfigpxe,ipxebootconfig
+
+images:
+- name: boot-controller
+  newName: ghcr.io/ironcore-dev/boot-operator
+  newTag: sha-8cb11a7
