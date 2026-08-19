@@ -1,9 +1,5 @@
 .envrc.local
 infra/local/.vagrant/
 infra/local/kubeconfig
-infra/containerlab/vm/*/disk.qcow2
-infra/containerlab/clab-*/
-infra/containerlab/kubeconfig
-infra/containerlab/kubeconfig.yaml
 infra/kind/kubeconfig.yaml
 redfish-mockup-clients

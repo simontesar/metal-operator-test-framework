@@ -1,8 +1,0 @@
-bmcIP: "172.16.100.12"
-bmcPort: 443
-bmcScheme: https
-username: admin
-password: password
-model: "Standard PC (Q35 + ICH9, 2009)"
-firmwareVersion: "1.0.0"
-powerState: "On"
