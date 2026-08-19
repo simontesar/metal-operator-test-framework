@@ -16,5 +16,5 @@ configMapGenerator:
 
 images:
 - name: fedhcp
-  newName: fedhcp
-  newTag: latest
+  newName: ghcr.io/ironcore-dev/fedhcp
+  newTag: sha-0f1fd30

@@ -25,3 +25,11 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/args/5
       value: --probe-os-image=ghcr.io/simontesar/metal-operator-test-framework:dev
+
+images:
+- name: controller
+  newName: ghcr.io/ironcore-dev/metal-operator-controller-manager
+  newTag: sha-35a86ba
+- name: metaldata
+  newName: ghcr.io/ironcore-dev/metaldata
+  newTag: sha-35a86ba

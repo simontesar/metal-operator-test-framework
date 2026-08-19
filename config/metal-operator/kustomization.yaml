@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-- ../../../metal-operator/config/default
+- https://github.com/ironcore-dev/metal-operator//config/default?ref=35a86bac04c01208a3fb6593b498388590d05f5b
 - registry_service.yaml
 - macdb-secret.yaml
 
