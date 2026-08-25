@@ -1,0 +1,13 @@
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BIOSSettings
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'noreboot']))
+spec:
+  serverRef:
+    name: (join('-', ['compatibility', $namespace, 'system-0']))
+  version: ($values.biosVersion)
+  settingsFlow:
+    - name: admin-phone
+      priority: 1
+      settings:
+        AdminPhone: ($values.biosSettingNoRebootValue)

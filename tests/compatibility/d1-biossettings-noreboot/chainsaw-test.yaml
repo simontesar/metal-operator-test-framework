@@ -1,0 +1,58 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: d1-biossettings-noreboot
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../resources/bmcsecret.yaml
+        - apply:
+            file: ../resources/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Available
+    - name: apply-biossettings
+      try:
+        - apply:
+            file: ../resources/biossettings-noreboot.yaml
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              spec:
+                biosSettingsRef:
+                  name: (join('-', ['compatibility', $namespace, 'noreboot']))
+    - name: assert-biossettings-applied
+      try:
+        - assert:
+            timeout: 10m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'noreboot']))
+              status:
+                state: Applied
