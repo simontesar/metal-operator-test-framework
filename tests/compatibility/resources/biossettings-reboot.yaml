@@ -1,0 +1,14 @@
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BIOSSettings
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'reboot']))
+spec:
+  serverRef:
+    name: (join('-', ['compatibility', $namespace, 'system-0']))
+  version: ($values.biosVersion)
+  serverMaintenancePolicy: Enforced
+  settingsFlow:
+    - name: boot-mode
+      priority: 1
+      settings:
+        BootMode: ($values.biosSettingRebootValue)

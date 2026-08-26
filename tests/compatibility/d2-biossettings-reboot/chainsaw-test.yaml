@@ -1,0 +1,88 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: d2-biossettings-reboot
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../resources/bmcsecret.yaml
+        - apply:
+            file: ../resources/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Available
+    - name: apply-biossettings
+      try:
+        - apply:
+            file: ../resources/biossettings-reboot.yaml
+    - name: assert-maintenance-created
+      try:
+        # ServerMaintenance is namespaced and always created in the metal-operator
+        # manager's own namespace (BIOSSettingsReconciler.requestMaintenanceForServer),
+        # not the chainsaw test namespace -- BMC/Server/BIOSSettings are cluster-scoped
+        # so this is the one case-D resource that needs an explicit namespace.
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerMaintenance
+              metadata:
+                namespace: ($values.managerNamespace)
+                ownerReferences:
+                - kind: BIOSSettings
+                  name: (join('-', ['compatibility', $namespace, 'reboot']))
+    - name: assert-server-in-maintenance
+      try:
+        - assert:
+            timeout: 10m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Maintenance
+    - name: assert-biossettings-applied
+      try:
+        - assert:
+            timeout: 30m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'reboot']))
+              status:
+                state: Applied
+    - name: assert-server-available-again
+      try:
+        - assert:
+            timeout: 15m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              spec:
+                (serverMaintenanceRef || 'absent'): 'absent'
+              status:
+                state: Available
