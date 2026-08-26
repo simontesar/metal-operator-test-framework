@@ -21,6 +21,9 @@ help: ## Show available targets
 	@echo "    test-compatibility-b1        (power ops via operation annotation)"
 	@echo "    test-compatibility-b2        (BMC reset)"
 	@echo "    test-compatibility-b3        (indicator LED)"
+	@echo "    test-compatibility-d         (D1-D2)"
+	@echo "    test-compatibility-d1        (BIOSSettings, non-reboot setting)"
+	@echo "    test-compatibility-d2        (BIOSSettings, reboot-required setting)"
 	@echo ""
 
 .PHONY: test-compatibility test-compatibility-a1 test-compatibility-a2
@@ -50,3 +53,15 @@ test-compatibility-b2: ## Run B2 BMC reset
 
 test-compatibility-b3: ## Run B3 indicator LED
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b3-indicator-led
+
+.PHONY: test-compatibility-d test-compatibility-d1 test-compatibility-d2
+test-compatibility-d: ## Run all D BIOS settings tests (D1-D2)
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
+		$(COMPATIBILITY_TEST_DIR)/d1-biossettings-noreboot \
+		$(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot
+
+test-compatibility-d1: ## Run D1 BIOSSettings, non-reboot setting
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d1-biossettings-noreboot
+
+test-compatibility-d2: ## Run D2 BIOSSettings, reboot-required setting
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot
