@@ -8,9 +8,9 @@ spec:
     - name: register-bmc
       try:
         - apply:
-            file: ../resources/bmcsecret.yaml
+            file: ../shared/bmcsecret.yaml
         - apply:
-            file: ../resources/bmc.yaml
+            file: ../shared/bmc.yaml
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -34,7 +34,7 @@ spec:
     - name: apply-biossettings
       try:
         - apply:
-            file: ../resources/biossettings-reboot.yaml
+            file: biossettings-reboot.yaml
     - name: assert-biossettings-applied
       try:
         - assert:

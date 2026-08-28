@@ -9,9 +9,9 @@ spec:
     - name: register-bmc
       try:
         - apply:
-            file: ../resources/bmcsecret.yaml
+            file: ../shared/bmcsecret.yaml
         - apply:
-            file: ../resources/bmc.yaml
+            file: ../shared/bmc.yaml
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -35,9 +35,9 @@ spec:
     - name: claim-server
       try:
         - apply:
-            file: ../resources/ignitionsecret.yaml
+            file: ignitionsecret.yaml
         - apply:
-            file: ../resources/serverclaim.yaml
+            file: serverclaim.yaml
         - assert:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
