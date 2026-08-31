@@ -1,0 +1,29 @@
+# Directly checks the Redfish API to verify a certain boot order
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ($jobName)
+  namespace: ($namespace)
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: check
+          image: curlimages/curl:8.11.1
+          env:
+            - name: URL
+              value: (join('', [$values.bmcScheme, '://', $values.bmcIP, ':', to_string($values.bmcPort), '/redfish/v1/Systems/1']))
+            - name: CREDENTIALS
+              value: (join(':', [$values.username, $values.password]))
+            - name: ORDER
+              value: (join('', ['"BootOrder":["', join('","', $values.bootOrder), '"]']))
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              body=$(curl -fsS -k -u "$CREDENTIALS" "$URL")
+              echo "$body"
+              echo "expecting substring: $ORDER"
+              printf '%s' "$body" | grep -F "$ORDER"
