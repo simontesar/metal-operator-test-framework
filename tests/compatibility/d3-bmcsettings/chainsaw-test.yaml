@@ -1,0 +1,71 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: d3-bmcsettings
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Available
+    - name: apply-bmcsettings
+      try:
+        - apply:
+            file: bmcsettings.yaml
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              spec:
+                bmcSettingsRef:
+                  name: (join('-', ['compatibility', $namespace, 'bmc']))
+    - name: assert-bmcsettings-applied
+      try:
+        - assert:
+            timeout: 30m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMCSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'bmc']))
+              status:
+                state: Applied
+    - name: assert-server-available-again
+      try:
+        - assert:
+            timeout: 15m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              spec:
+                (serverMaintenanceRef || 'absent'): 'absent'
+              status:
+                state: Available

@@ -1,0 +1,11 @@
+apiVersion: metal.ironcore.dev/v1alpha1
+kind: BMCSettings
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'bmc']))
+spec:
+  BMCRef:
+    name: (join('-', ['compatibility', $namespace]))
+  version: ($values.firmwareVersion)
+  serverMaintenancePolicy: Enforced
+  settings:
+    EmailAlert.1.Address: alerts@example.com
