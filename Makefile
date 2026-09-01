@@ -78,5 +78,5 @@ test-compatibility-f: ## Run all F boot-control tests (F3)
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
 		$(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
 
-test-compatibility-f3: ## Run F3 persistent boot order (reads Boot.BootOrder back from the BMC)
+test-compatibility-f3: ## Run F3 persistent boot order
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
