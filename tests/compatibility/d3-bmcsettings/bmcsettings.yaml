@@ -7,5 +7,4 @@ spec:
     name: (join('-', ['compatibility', $namespace]))
   version: ($values.firmwareVersion)
   serverMaintenancePolicy: Enforced
-  settings:
-    EmailAlert.1.Address: alerts@example.com
+  settings: (from_items([[($values.bmcSettingKey), ($values.bmcSettingValue)]]))
