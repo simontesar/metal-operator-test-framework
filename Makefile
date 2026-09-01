@@ -25,6 +25,8 @@ help: ## Show available targets
 	@echo "    test-compatibility-d1        (BIOSSettings, non-reboot setting)"
 	@echo "    test-compatibility-d2        (BIOSSettings, reboot-required setting)"
 	@echo "    test-compatibility-d3        (BMCSettings, Manager attribute; needs a Dell BMC)"
+	@echo "    test-compatibility-f         (F3)"
+	@echo "    test-compatibility-f3        (persistent boot order)"
 	@echo ""
 
 .PHONY: test-compatibility test-compatibility-a1 test-compatibility-a2
@@ -70,3 +72,11 @@ test-compatibility-d2: ## Run D2 BIOSSettings, reboot-required setting
 
 test-compatibility-d3: ## Run D3 BMCSettings, attribute change
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d3-bmcsettings
+
+.PHONY: test-compatibility-f test-compatibility-f3
+test-compatibility-f: ## Run all F boot-control tests (F3)
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
+		$(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
+
+test-compatibility-f3: ## Run F3 persistent boot order
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order

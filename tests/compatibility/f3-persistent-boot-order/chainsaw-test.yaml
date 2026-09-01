@@ -1,0 +1,103 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: f3-persistent-boot-order
+spec:
+  concurrent: false
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Available
+    - name: patch-boot-order
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              spec:
+                bootOrder:
+                  - name: ($values.bootOrder[0])
+                    device: ($values.bootOrder[0])
+                    priority: 1
+                  - name: ($values.bootOrder[1])
+                    device: ($values.bootOrder[1])
+                    priority: 2
+                  - name: ($values.bootOrder[2])
+                    device: ($values.bootOrder[2])
+                    priority: 3
+    - name: assert-boot-order-on-bmc
+      bindings:
+        - name: jobName
+          value: bootorder-check
+      try:
+        - apply:
+            file: bootorder-check-job.yaml
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ($jobName)
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+    - name: power-cycle
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                annotations:
+                  metal.ironcore.dev/operation: power-cycle-server
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "On"
+    - name: assert-boot-order-after-cycle
+      bindings:
+        - name: jobName
+          value: bootorder-check-after-cycle
+      try:
+        - apply:
+            file: bootorder-check-job.yaml
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ($jobName)
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
