@@ -56,3 +56,14 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'noreboot']))
               status:
                 state: Applied
+    - name: assert-maintenance-released
+      try:
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'noreboot']))
+              spec:
+                (serverMaintenanceRef || 'absent'): 'absent'
