@@ -68,5 +68,5 @@ test-compatibility-d1: ## Run D1 BIOSSettings, non-reboot setting
 test-compatibility-d2: ## Run D2 BIOSSettings, reboot-required setting
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot
 
-test-compatibility-d3: ## Run D3 BMCSettings, Manager attribute change (requires a Dell-manufacturer BMC)
+test-compatibility-d3: ## Run D3 BMCSettings, attribute change
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d3-bmcsettings
