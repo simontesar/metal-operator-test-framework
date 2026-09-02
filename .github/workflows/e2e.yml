@@ -22,20 +22,13 @@ jobs:
     timeout-minutes: 120
     env:
       METAL_LAB_REF: main
-      ENABLE_KVM: "false"                 # consumed by metal-lab/infra.clab.yaml
-      KVM_DEVICE: /dev/null               # ditto - avoids binding a missing /dev/kvm
+      ENABLE_KVM: "false"
+      KVM_DEVICE: /dev/null
       KUBECONFIG: ${{ github.workspace }}/metal-lab/kubeconfig.yaml
       COMPATIBILITY_VALUES: ${{ github.workspace }}/metal-lab/values-containerlab-node1.yaml
     steps:
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: false
-          large-packages: false
-
       - name: Checkout test framework
         uses: actions/checkout@v4
-
       - name: Checkout metal-lab
         uses: actions/checkout@v4
         with:
@@ -45,20 +38,16 @@ jobs:
 
       - name: Install kubectl
         uses: azure/setup-kubectl@v4
-
       - name: Install kustomize
         run: |
           curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           sudo mv kustomize /usr/local/bin/
-
       - name: Install kind
         run: |
           curl -sSLo kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
           sudo install -m 0755 kind /usr/local/bin/kind
-
       - name: Install containerlab
         uses: containerlab/setup-clab@main
-
       - name: Install chainsaw
         uses: kyverno/action-install-chainsaw@v0.2.12
 
@@ -89,13 +78,13 @@ jobs:
           cp metal-lab/vm/node2/console.log artifacts/node2-console.log 2>/dev/null || true
           sudo -E clab inspect -t metal-lab/infra.clab.yaml > artifacts/clab-inspect.txt 2>&1 || true
 
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-artifacts
-          path: artifacts/
-          if-no-files-found: warn
+      # - name: Upload artifacts
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: e2e-artifacts
+      #     path: artifacts/
+      #     if-no-files-found: warn
 
       - name: Tear down
         if: always()
