@@ -47,7 +47,7 @@ jobs:
           curl -sSLo kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
           sudo install -m 0755 kind /usr/local/bin/kind
       - name: Install containerlab
-        uses: containerlab/setup-clab@main
+        run: bash -c "$(curl -sL https://get.containerlab.dev)" -- -v 0.78.2
       - name: Install chainsaw
         uses: kyverno/action-install-chainsaw@v0.2.12
 
