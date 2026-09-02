@@ -42,10 +42,11 @@ jobs:
         run: |
           curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
           sudo mv kustomize /usr/local/bin/
-      - name: Install kind
+      - name: Install the latest version of kind
         run: |
-          curl -sSLo kind https://kind.sigs.k8s.io/dl/v0.24.0/kind-linux-amd64
-          sudo install -m 0755 kind /usr/local/bin/kind
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
       - name: Install containerlab
         run: bash -c "$(curl -sL https://get.containerlab.dev)" -- -v 0.78.2
       - name: Install chainsaw
