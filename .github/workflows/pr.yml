@@ -69,7 +69,7 @@ jobs:
         run: |
           mkdir -p artifacts
           kubectl get all -A > artifacts/k8s-all.txt 2>&1 || true
-          kubectl get bmc,server,serverclaim,biossettings,bmcsettings -A -o yaml > artifacts/metal-crs.yaml 2>&1 || true
+          kubectl get bmc,server,serverclaim,biossettings,bmcsettings,server,serverbootconfigurations -A -o yaml > artifacts/metal-crs.yaml 2>&1 || true
           kubectl -n metal-operator-system logs deploy/metal-operator-controller-manager --tail=-1 > artifacts/metal-operator.log 2>&1 || true
           kubectl -n boot-operator-system logs deploy/boot-operator-controller-manager --tail=-1 > artifacts/boot-operator.log 2>&1 || true
           cp metal-lab/vm/node1/console.log artifacts/node1-console.log 2>/dev/null || true
