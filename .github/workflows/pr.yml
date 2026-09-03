@@ -79,13 +79,13 @@ jobs:
           cp metal-lab/vm/node2/console.log artifacts/node2-console.log 2>/dev/null || true
           sudo -E clab inspect -t metal-lab/infra.clab.yaml > artifacts/clab-inspect.txt 2>&1 || true
 
-      # - name: Upload artifacts
-      #   if: always()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: e2e-artifacts
-      #     path: artifacts/
-      #     if-no-files-found: warn
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: artifacts/
+          if-no-files-found: warn
 
       - name: Tear down
         if: always()
