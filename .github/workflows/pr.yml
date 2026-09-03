@@ -14,12 +14,8 @@ permissions:
 
 jobs:
   test:
-    # Gate: manual dispatch, or PR labelled 'ok-to-test'
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.labels.*.name, 'ok-to-test')
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
     env:
       METAL_LAB_REF: main
       ENABLE_KVM: "false"
