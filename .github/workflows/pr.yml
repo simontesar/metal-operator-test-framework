@@ -1,0 +1,90 @@
+name: PR test run
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+  workflow_dispatch:
+
+concurrency:
+  group: test-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      METAL_LAB_REF: main
+      ENABLE_KVM: "false"
+      KVM_DEVICE: /dev/null
+      KUBECONFIG: ${{ github.workspace }}/metal-lab/kubeconfig.yaml
+      COMPATIBILITY_VALUES: ${{ github.workspace }}/metal-lab/values-containerlab-node1.yaml
+    steps:
+      - name: Checkout test framework
+        uses: actions/checkout@v4
+      - name: Checkout metal-lab
+        uses: actions/checkout@v4
+        with:
+          repository: simontesar/metal-lab
+          ref: ${{ env.METAL_LAB_REF }}
+          path: metal-lab
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+      - name: Install kustomize
+        run: |
+          curl -sSL "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+      - name: Install the latest version of kind
+        run: |
+          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
+          chmod +x ./kind
+          sudo mv ./kind /usr/local/bin/kind
+      - name: Install containerlab
+        run: bash -c "$(curl -sL https://get.containerlab.dev)" -- -v 0.78.2
+      - name: Install chainsaw
+        uses: kyverno/action-install-chainsaw@v0.2.12
+
+      - name: Bring up metal-lab
+        working-directory: metal-lab
+        run: |
+          touch kubeconfig.yaml
+          sudo -E make deploy \
+            metal-operator-deploy-wait boot-operator-deploy-wait \
+            fedhcp-deploy-wait tftp-deploy-wait
+          sudo chown -R "$USER:$USER" .
+
+      - name: Run compatibility suite
+        run: |
+          mkdir -p "${{ github.workspace }}/artifacts"
+          make test-compatibility-all \
+            ASSERT_TIMEOUT=25m \
+            CHAINSAW_EXTRA_FLAGS="--report-format JSON --report-name chainsaw-report --report-path ${{ github.workspace }}/artifacts"
+
+      - name: Collect diagnostics
+        if: always()
+        run: |
+          mkdir -p artifacts
+          kubectl get all -A > artifacts/k8s-all.txt 2>&1 || true
+          kubectl get bmc,server,serverclaim,biossettings,bmcsettings,server,serverbootconfigurations -A -o yaml > artifacts/metal-crs.yaml 2>&1 || true
+          kubectl -n metal-operator-system logs deploy/metal-operator-controller-manager --tail=-1 > artifacts/metal-operator.log 2>&1 || true
+          kubectl -n boot-operator-system logs deploy/boot-operator-controller-manager --tail=-1 > artifacts/boot-operator.log 2>&1 || true
+          cp metal-lab/vm/node1/console.log artifacts/node1-console.log 2>/dev/null || true
+          cp metal-lab/vm/node2/console.log artifacts/node2-console.log 2>/dev/null || true
+          sudo -E clab inspect -t metal-lab/infra.clab.yaml > artifacts/clab-inspect.txt 2>&1 || true
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: artifacts/
+          if-no-files-found: warn
+
+      - name: Tear down
+        if: always()
+        working-directory: metal-lab
+        run: sudo -E make destroy clean-disks || true

@@ -28,6 +28,8 @@ help: ## Show available targets
 	@echo "    test-compatibility-f         (F3)"
 	@echo "    test-compatibility-f3        (persistent boot order)"
 	@echo ""
+	@echo "    test-compatibility-all       (everything: A1,A2,B1-3,D1-3,F3)"
+	@echo ""
 
 .PHONY: test-compatibility test-compatibility-a1 test-compatibility-a2
 test-compatibility: ## Run A compatibility chainsaw tests (A1, A2)
@@ -80,3 +82,16 @@ test-compatibility-f: ## Run all F boot-control tests (F3)
 
 test-compatibility-f3: ## Run F3 persistent boot order
 	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
+
+.PHONY: test-compatibility-all
+test-compatibility-all: ## Run every compatibility case (A1,A2,B1-3,D1-3,F3)
+	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
+		$(COMPATIBILITY_TEST_DIR)/a1-bmc-registration \
+		$(COMPATIBILITY_TEST_DIR)/a2-discovery \
+		$(COMPATIBILITY_TEST_DIR)/b1-power-annotation \
+		$(COMPATIBILITY_TEST_DIR)/b2-bmc-reset \
+		$(COMPATIBILITY_TEST_DIR)/b3-indicator-led \
+		$(COMPATIBILITY_TEST_DIR)/d1-biossettings-noreboot \
+		$(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot \
+		$(COMPATIBILITY_TEST_DIR)/d3-bmcsettings \
+		$(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
