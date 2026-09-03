@@ -52,7 +52,7 @@ jobs:
       - name: Install chainsaw
         uses: kyverno/action-install-chainsaw@v0.2.12
 
-      - name: Bring up metal-lab (TCG, both nodes)
+      - name: Bring up metal-lab
         working-directory: metal-lab
         run: |
           touch kubeconfig.yaml
@@ -63,6 +63,7 @@ jobs:
 
       - name: Run compatibility suite
         run: |
+          mkdir -p "${{ github.workspace }}/artifacts"
           make test-compatibility-all \
             ASSERT_TIMEOUT=25m \
             CHAINSAW_EXTRA_FLAGS="--report-format JSON --report-name chainsaw-report --report-path ${{ github.workspace }}/artifacts"
