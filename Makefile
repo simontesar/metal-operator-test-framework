@@ -1,97 +1,48 @@
 CHAINSAW ?= chainsaw
 
-COMPATIBILITY_TEST_DIR := tests/compatibility
-COMPATIBILITY_VALUES ?= infra/kind/values-basic-go.yaml
+TEST_DIR := tests
+VALUES ?= infra/kind/values-basic-go.yaml
 ASSERT_TIMEOUT ?= 15m
 CHAINSAW_EXTRA_FLAGS ?=
+
+CHAINSAW_RUN = $(CHAINSAW) test --values $(VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS)
+
+TESTS := \
+	01-bmc-registration \
+	02-discovery \
+	03-power-annotation \
+	04-bmc-reset \
+	05-indicator-led \
+	06-biossettings-noreboot \
+	07-biossettings-reboot \
+	08-bmcsettings \
+	09-persistent-boot-order
 
 .PHONY: help
 help: ## Show available targets
 	@echo "test framework targets:"
 	@echo ""
-	@echo "  compatibility tests:"
-	@echo "    * values via COMPATIBILITY_VALUES (default infra/kind/values-basic-go.yaml)"
+	@echo "  tests:"
+	@echo "    * values via VALUES (default infra/kind/values-basic-go.yaml)"
 	@echo "    * assert timeout via ASSERT_TIMEOUT (default 15m; e.g. ASSERT_TIMEOUT=5m)"
 	@echo "    * extra chainsaw flags via CHAINSAW_EXTRA_FLAGS (e.g. CHAINSAW_EXTRA_FLAGS=\"--skip-delete -v\")"
 	@echo ""
-	@echo "    test-compatibility           (A1, A2)"
-	@echo "    test-compatibility-a1"
-	@echo "    test-compatibility-a2"
-	@echo "    test-compatibility-b         (B1-B3)"
-	@echo "    test-compatibility-b1        (power ops via operation annotation)"
-	@echo "    test-compatibility-b2        (BMC reset)"
-	@echo "    test-compatibility-b3        (indicator LED)"
-	@echo "    test-compatibility-d         (D1-D3)"
-	@echo "    test-compatibility-d1        (BIOSSettings, non-reboot setting)"
-	@echo "    test-compatibility-d2        (BIOSSettings, reboot-required setting)"
-	@echo "    test-compatibility-d3        (BMCSettings, Manager attribute; needs a Dell BMC)"
-	@echo "    test-compatibility-f         (F3)"
-	@echo "    test-compatibility-f3        (persistent boot order)"
-	@echo ""
-	@echo "    test-compatibility-all       (everything: A1,A2,B1-3,D1-3,F3)"
+	@echo "    test                             (run every test)"
+	@echo "    test/01-bmc-registration         (BMC registration)"
+	@echo "    test/02-discovery                (server discovery and inventory)"
+	@echo "    test/03-power-annotation         (power ops via operation annotation)"
+	@echo "    test/04-bmc-reset                (BMC reset)"
+	@echo "    test/05-indicator-led            (indicator LED)"
+	@echo "    test/06-biossettings-noreboot    (BIOSSettings, non-reboot setting)"
+	@echo "    test/07-biossettings-reboot      (BIOSSettings, reboot-required setting)"
+	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute; needs a Dell BMC)"
+	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo ""
 
-.PHONY: test-compatibility test-compatibility-a1 test-compatibility-a2
-test-compatibility: ## Run A compatibility chainsaw tests (A1, A2)
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
-		$(COMPATIBILITY_TEST_DIR)/a1-bmc-registration \
-		$(COMPATIBILITY_TEST_DIR)/a2-discovery
+.PHONY: test $(addprefix test/,$(TESTS))
 
-test-compatibility-a1: ## Run A1 BMC registration
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/a1-bmc-registration
+test: ## Run every test
+	$(CHAINSAW_RUN) $(addprefix $(TEST_DIR)/,$(TESTS))
 
-test-compatibility-a2: ## Run A2 discovery
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/a2-discovery
-
-.PHONY: test-compatibility-b test-compatibility-b1 test-compatibility-b2 test-compatibility-b3
-test-compatibility-b: ## Run all B power-management tests (B1-B3)
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
-		$(COMPATIBILITY_TEST_DIR)/b1-power-annotation \
-		$(COMPATIBILITY_TEST_DIR)/b2-bmc-reset \
-		$(COMPATIBILITY_TEST_DIR)/b3-indicator-led
-
-test-compatibility-b1: ## Run B1 power operations via operation annotation
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b1-power-annotation
-
-test-compatibility-b2: ## Run B2 BMC reset
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b2-bmc-reset
-
-test-compatibility-b3: ## Run B3 indicator LED
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/b3-indicator-led
-
-.PHONY: test-compatibility-d test-compatibility-d1 test-compatibility-d2 test-compatibility-d3
-test-compatibility-d: ## Run all D settings tests (D1-D3)
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
-		$(COMPATIBILITY_TEST_DIR)/d1-biossettings-noreboot \
-		$(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot \
-		$(COMPATIBILITY_TEST_DIR)/d3-bmcsettings
-
-test-compatibility-d1: ## Run D1 BIOSSettings, non-reboot setting
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d1-biossettings-noreboot
-
-test-compatibility-d2: ## Run D2 BIOSSettings, reboot-required setting
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot
-
-test-compatibility-d3: ## Run D3 BMCSettings, attribute change
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/d3-bmcsettings
-
-.PHONY: test-compatibility-f test-compatibility-f3
-test-compatibility-f: ## Run all F boot-control tests (F3)
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
-		$(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
-
-test-compatibility-f3: ## Run F3 persistent boot order
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) $(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
-
-.PHONY: test-compatibility-all
-test-compatibility-all: ## Run every compatibility case (A1,A2,B1-3,D1-3,F3)
-	$(CHAINSAW) test --values $(COMPATIBILITY_VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS) \
-		$(COMPATIBILITY_TEST_DIR)/a1-bmc-registration \
-		$(COMPATIBILITY_TEST_DIR)/a2-discovery \
-		$(COMPATIBILITY_TEST_DIR)/b1-power-annotation \
-		$(COMPATIBILITY_TEST_DIR)/b2-bmc-reset \
-		$(COMPATIBILITY_TEST_DIR)/b3-indicator-led \
-		$(COMPATIBILITY_TEST_DIR)/d1-biossettings-noreboot \
-		$(COMPATIBILITY_TEST_DIR)/d2-biossettings-reboot \
-		$(COMPATIBILITY_TEST_DIR)/d3-bmcsettings \
-		$(COMPATIBILITY_TEST_DIR)/f3-persistent-boot-order
+$(addprefix test/,$(TESTS)): test/%: ## Run a single test
+	$(CHAINSAW_RUN) $(TEST_DIR)/$*

@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: d1-biossettings-noreboot
+  name: 08-bmcsettings
 spec:
   concurrent: false
   steps:
@@ -31,39 +31,41 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
-    - name: apply-biossettings
+    - name: apply-bmcsettings
       try:
         - apply:
-            file: biossettings-noreboot.yaml
+            file: bmcsettings.yaml
         - assert:
             timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              spec:
+                bmcSettingsRef:
+                  name: (join('-', ['compatibility', $namespace, 'bmc']))
+    - name: assert-bmcsettings-applied
+      try:
+        - assert:
+            timeout: 30m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMCSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'bmc']))
+              status:
+                state: Applied
+    - name: assert-server-available-again
+      try:
+        - assert:
+            timeout: 15m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                biosSettingsRef:
-                  name: (join('-', ['compatibility', $namespace, 'noreboot']))
-    - name: assert-biossettings-applied
-      try:
-        - assert:
-            timeout: 10m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: BIOSSettings
-              metadata:
-                name: (join('-', ['compatibility', $namespace, 'noreboot']))
-              status:
-                state: Applied
-    - name: assert-maintenance-released
-      try:
-        - assert:
-            timeout: 5m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: BIOSSettings
-              metadata:
-                name: (join('-', ['compatibility', $namespace, 'noreboot']))
-              spec:
                 (serverMaintenanceRef || 'absent'): 'absent'
+              status:
+                state: Available

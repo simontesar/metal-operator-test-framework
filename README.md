@@ -1,20 +1,19 @@
 # metal-operator test framework
 
 ## Test suite
-The `tests/compatibility` directory contains a suite of compatibility tests based on [chainsaw](https://kyverno.github.io/chainsaw/latest/). Every test case creates k8s resources in steps and asserts their status before proceeding to the next steps and implements common metal-operator workflows. Tests are independent from the infrastructure they run on and respect `KUBECONFIG`.
+The `tests` directory contains a suite of tests based on [chainsaw](https://kyverno.github.io/chainsaw/latest/). Every test case creates k8s resources in steps and asserts their status before proceeding to the next steps and implements common metal-operator workflows. Tests are independent from the infrastructure they run on and respect `KUBECONFIG`.
 
 ### Requirements
 * [chainsaw](https://kyverno.github.io/chainsaw/latest/)
 * A metal-operator installation and BMC to run tests against. This repository usually uses the locally virtualised [metal-lab](https://github.com/simontesar/metal-lab).
 
 ### Usage
-The server to run a test against is configured by passing a values file to chainsaw. The default file is `infra/kind/values-basic-go.yaml` that points to a redfish mock setup in the `kind` environment and can be overridden via `COMPATIBILITY_VALUES`.
+The server to run a test against is configured by passing a values file to chainsaw. The default file is `infra/kind/values-basic-go.yaml` that points to a redfish mock setup in the `kind` environment and can be overridden via `VALUES`.
 
 ```bash
-make test-compatibility                                                                    # Run all tests
-make test-compatibility-b                                                                  # Run a specific category of tests
-make test-compatibility-a1                                                                 # Run a specific case
-make test-compatibility-b1 COMPATIBILITY_VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC.
+make test                                                                    # Run all tests
+make test/01-bmc-registration                                                # Run a specific test
+make test/03-power-annotation VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC.
 ```
 
 ### Predefined values

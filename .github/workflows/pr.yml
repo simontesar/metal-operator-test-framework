@@ -21,7 +21,7 @@ jobs:
       ENABLE_KVM: "false"
       KVM_DEVICE: /dev/null
       KUBECONFIG: ${{ github.workspace }}/metal-lab/kubeconfig.yaml
-      COMPATIBILITY_VALUES: ${{ github.workspace }}/metal-lab/values-containerlab-node1.yaml
+      VALUES: ${{ github.workspace }}/metal-lab/values-containerlab-node1.yaml
     steps:
       - name: Checkout test framework
         uses: actions/checkout@v4
@@ -57,10 +57,10 @@ jobs:
             fedhcp-deploy-wait tftp-deploy-wait
           sudo chown -R "$USER:$USER" .
 
-      - name: Run compatibility suite
+      - name: Run test suite
         run: |
           mkdir -p "${{ github.workspace }}/artifacts"
-          make test-compatibility-all \
+          make test \
             ASSERT_TIMEOUT=25m \
             CHAINSAW_EXTRA_FLAGS="--report-format JSON --report-name chainsaw-report --report-path ${{ github.workspace }}/artifacts"
 
