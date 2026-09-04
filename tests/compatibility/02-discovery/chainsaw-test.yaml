@@ -1,8 +1,8 @@
-# A2 — Server discovery and inventory
+# 02 — Server discovery and inventory
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: a2-discovery
+  name: 02-discovery
 spec:
   concurrent: false
   steps:

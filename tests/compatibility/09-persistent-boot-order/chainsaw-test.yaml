@@ -1,9 +1,7 @@
-# B3 — Indicator LED
-# - Kept as a separate test to be skippable for models that do not support LED control
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: b3-indicator-led
+  name: 09-persistent-boot-order
 spec:
   concurrent: false
   steps:
@@ -33,7 +31,7 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
-    - name: led-lit
+    - name: patch-boot-order
       try:
         - patch:
             resource:
@@ -42,18 +40,33 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                indicatorLED: Lit
-    - name: assert-led-lit
+                bootOrder:
+                  - name: ($values.bootOrder[0])
+                    device: ($values.bootOrder[0])
+                    priority: 1
+                  - name: ($values.bootOrder[1])
+                    device: ($values.bootOrder[1])
+                    priority: 2
+                  - name: ($values.bootOrder[2])
+                    device: ($values.bootOrder[2])
+                    priority: 3
+    - name: assert-boot-order-on-bmc
+      bindings:
+        - name: jobName
+          value: bootorder-check
       try:
+        - apply:
+            file: bootorder-check-job.yaml
         - assert:
+            timeout: 2m
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: Server
+              apiVersion: batch/v1
+              kind: Job
               metadata:
-                name: (join('-', ['compatibility', $namespace, 'system-0']))
+                name: ($jobName)
               status:
-                indicatorLED: Lit
-    - name: led-off
+                (conditions[?type == 'Complete'] | [0].status): "True"
+    - name: power-cycle
       try:
         - patch:
             resource:
@@ -61,15 +74,30 @@ spec:
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
-              spec:
-                indicatorLED: "Off"
-    - name: assert-led-off
-      try:
+                annotations:
+                  metal.ironcore.dev/operation: power-cycle-server
         - assert:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
               status:
-                indicatorLED: "Off"
+                powerState: "On"
+    - name: assert-boot-order-after-cycle
+      bindings:
+        - name: jobName
+          value: bootorder-check-after-cycle
+      try:
+        - apply:
+            file: bootorder-check-job.yaml
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ($jobName)
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"

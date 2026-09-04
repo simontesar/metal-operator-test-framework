@@ -64,7 +64,7 @@ Run a test against the basic go instance:
 ```shell
 $ cd ../..
 $ export KUBECONFIG=$PWD/kubeconfig.yaml
-$ make test-compatibility-b1 COMPATIBILITY_VALUES=infra/kind/values-basic-go.yaml CHAINSAW_EXTRA_FLAGS="--pause-on-failure"
+$ make test-compatibility-03 COMPATIBILITY_VALUES=infra/kind/values-basic-go.yaml CHAINSAW_EXTRA_FLAGS="--pause-on-failure"
 ```
 
 Tear down:

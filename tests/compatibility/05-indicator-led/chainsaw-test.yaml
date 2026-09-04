@@ -1,7 +1,9 @@
+# 05 — Indicator LED
+# - Kept as a separate test to be skippable for models that do not support LED control
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
-  name: d3-bmcsettings
+  name: 05-indicator-led
 spec:
   concurrent: false
   steps:
@@ -31,41 +33,43 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
-    - name: apply-bmcsettings
+    - name: led-lit
       try:
-        - apply:
-            file: bmcsettings.yaml
-        - assert:
-            timeout: 2m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: BMC
-              metadata:
-                name: (join('-', ['compatibility', $namespace]))
-              spec:
-                bmcSettingsRef:
-                  name: (join('-', ['compatibility', $namespace, 'bmc']))
-    - name: assert-bmcsettings-applied
-      try:
-        - assert:
-            timeout: 30m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: BMCSettings
-              metadata:
-                name: (join('-', ['compatibility', $namespace, 'bmc']))
-              status:
-                state: Applied
-    - name: assert-server-available-again
-      try:
-        - assert:
-            timeout: 15m
+        - patch:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                (serverMaintenanceRef || 'absent'): 'absent'
+                indicatorLED: Lit
+    - name: assert-led-lit
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
-                state: Available
+                indicatorLED: Lit
+    - name: led-off
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              spec:
+                indicatorLED: "Off"
+    - name: assert-led-off
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                indicatorLED: "Off"
