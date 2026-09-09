@@ -2,6 +2,8 @@
 
 This document specifies sets of capabilities a BMC needs to support to function with the metal-operator. Right now there is essentially one capability per method of the [`bmc.BMC`](https://github.com/ironcore-dev/metal-operator/blob/f5f9b8121c3180ee40f3c672476ab14f7109562f/bmc/bmc.go#L192)-interface of the metal-operator.
 
+Which Chainsaw tests cover each capability is tracked in the [coverage document](coverage.md).
+
 ## Description of columns in capability tables
 
 | Column | Description |
