@@ -1,7 +1,7 @@
 CHAINSAW ?= chainsaw
 
 TEST_DIR := tests
-VALUES ?= infra/kind/values-basic-go.yaml
+VALUES ?=
 ASSERT_TIMEOUT ?= 15m
 CHAINSAW_EXTRA_FLAGS ?=
 
@@ -23,7 +23,7 @@ help: ## Show available targets
 	@echo "test framework targets:"
 	@echo ""
 	@echo "  tests:"
-	@echo "    * values via VALUES (default infra/kind/values-basic-go.yaml)"
+	@echo "    * values via VALUES (required; e.g. VALUES=../metal-lab/values-containerlab-node1.yaml)"
 	@echo "    * assert timeout via ASSERT_TIMEOUT (default 15m; e.g. ASSERT_TIMEOUT=5m)"
 	@echo "    * extra chainsaw flags via CHAINSAW_EXTRA_FLAGS (e.g. CHAINSAW_EXTRA_FLAGS=\"--skip-delete -v\")"
 	@echo ""
@@ -39,10 +39,19 @@ help: ## Show available targets
 	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo ""
 
+.PHONY: require-values
+require-values:
+	@test -n "$(VALUES)" || { \
+		echo "VALUES is not set. Pass a chainsaw values file, e.g."; \
+		echo "  make $(MAKECMDGOALS) VALUES=/path/to/values.yaml"; \
+		echo "See README.md for the expected contents."; \
+		exit 1; \
+	}
+
 .PHONY: test $(addprefix test/,$(TESTS))
 
-test: ## Run every test
+test: require-values ## Run every test
 	$(CHAINSAW_RUN) $(addprefix $(TEST_DIR)/,$(TESTS))
 
-$(addprefix test/,$(TESTS)): test/%: ## Run a single test
+$(addprefix test/,$(TESTS)): test/%: require-values ## Run a single test
 	$(CHAINSAW_RUN) $(TEST_DIR)/$*
