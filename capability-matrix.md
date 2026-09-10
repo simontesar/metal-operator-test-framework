@@ -11,7 +11,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | **Capability id** | A key identifying the capability. |
 | **`BMC` method** | The method of the `BMC` interface in the metal-operator the row stands for. |
 | **Level** | How important the capability is. |
-| **Redfish** | The Redfish path/action the BMC must expose for the capability to work. |
+| **Redfish API** | The Redfish path/action the BMC must expose for the capability to work. |
 | **Redfish request body** | An example request payload for write operations. |
 
 ## Conformance levels
@@ -95,7 +95,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
 | `account.create-update` | `CreateOrUpdateAccount` | OPTIONAL | `POST` `AccountService/Accounts`; fallback `PATCH` an existing / empty slot with the same fields | `{"UserName": "<name>", "Password": "<pw>", "RoleId": "<role>", "Enabled": true}` |
-| `account.delete` | `DeleteAccount` | OPTIONAL | `DELETE` the `ManagerAccount` URI or fallback to `PATCH`ing the slot | `{"UserName": "", "Enabled": false}` for PATCH fallback |
+| `account.delete` | `DeleteAccount` | OPTIONAL | `DELETE` the `ManagerAccount` URI or fall back to `PATCH`ing the slot | `{"UserName": "", "Enabled": false}` for PATCH fallback |
 | `account.list` | `GetAccounts` | OPTIONAL | `GET` `AccountService/Accounts` collection | - |
 | `account.service` | `GetAccountService` | OPTIONAL | `GET` `/redfish/v1/AccountService` | - |
 

@@ -3,7 +3,7 @@
 This document summarises what tests cover which capabilities in the [capability-matrix](capability-matrix.md).
 
 * A capability is **covered** when running the test makes the operator invoke the method.
-* A capability is verified when the test asserts that it has produced expected values.
+* A capability is **verified** when the test asserts that it has produced expected values.
 
 ## Common coverage
 
@@ -33,7 +33,7 @@ These rows/capabilities include the following placeholders in their `test` field
 
 ## Coverage by capability
 
-| Capability id | test | verified |
+| Capability ID | Test | Verified |
 |---|---|:---:|
 | `power.on` | `Discovery` | yes |
 | `power.off-graceful` | `Discovery` | yes |
