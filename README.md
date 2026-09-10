@@ -1,23 +1,31 @@
 # metal-operator test framework
 
+This repository aims to provide a set of capabilities a BMC-implementation needs to support to be usable with the [metal-operator](https://github.com/ironcore-dev/metal-operator), and a set of tests to verify these capabilities. Its goal is to enable BMC vendors or users to run these tests against a BMC with minimal effort and more easily determine what capabilities their BMC may be missing or implementing incorrectly.
+
+## Capabilities
+Refer to [capability matrix](capability-matrix.md) for a list of capabilities and their descriptions. Refer to the [coverage document](coverage.md) for what tests cover which capabilities. Determine what your BMC might not implement by referring to a failed test.
+
 ## Test suite
-The `tests` directory contains a suite of tests based on [chainsaw](https://kyverno.github.io/chainsaw/latest/). Every test case creates k8s resources in steps and asserts their status before proceeding to the next steps and implements common metal-operator workflows. Tests are independent from the infrastructure they run on and respect `KUBECONFIG`.
+The `tests` directory contains a suite of tests based on [chainsaw](https://kyverno.github.io/chainsaw/latest/). Every test case creates k8s resources in steps and asserts their status before proceeding. Tests are independent of from the infrastructure they run on and respect `KUBECONFIG`.
 
 ### Requirements
 * [chainsaw](https://kyverno.github.io/chainsaw/latest/)
-* A metal-operator installation and BMC to run tests against. This repository usually uses the locally virtualised [metal-lab](https://github.com/simontesar/metal-lab).
+* A metal-operator installation and BMC to run tests against. This repository usually uses the locally virtualised [metal-lab](https://github.com/simontesar/metal-lab) to develop or verify functionality of the actual tests. You can use the lab setup as a reference.
 
 ### Usage
-The server to run a test against is configured by passing a values file to chainsaw. The default file is `infra/kind/values-basic-go.yaml` that points to a redfish mock setup in the `kind` environment and can be overridden via `VALUES`.
+The server to run a test against is configured by passing a values file to chainsaw. The default file is `infra/kind/values-basic-go.yaml` which points to a Redfish mock setup in the [`kind` environment](environments.md) and should be overridden via `VALUES`.
 
 ```bash
-make test                                                                    # Run all tests
-make test/01-bmc-registration                                                # Run a specific test
-make test/03-power-annotation VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC.
+# Examples
+make test                                                                              # Run all tests
+make test/01-bmc-registration                                                          # Run a specific test
+make test/03-power-annotation VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC
 ```
 
+The [`metal-lab`](https://github.com/simontesar/metal-lab) repository provides a standalone containerlab-based environment and ships its own `VALUES` `values-containerlab-node1.yaml` / `values-containerlab-node2.yaml`. Clone the metal-lab repository and refer to its `README` to try the suite of tests without your own BMC.
+
 ### Bring your own BMC
-To run tests against your own BMC, copy  values into a new file:
+To run tests against your own BMC, copy these values into a new file:
 ```yaml
 bmcIP: "172.16.100.11"
 bmcPort: 443
@@ -35,32 +43,8 @@ bmcSettingKey: "EmailAlert.1.Address"
 bmcSettingValue: "alerts@example.com"
 ```
 
-Adjust the credentials and expectations to their respective values and point the tests to it:
+Adjust the credentials and expectations to your respective values and point the tests to it:
 
 ```bash
-make make test/02-discovery VALUES=/path/to/new/file.yaml
+make test/02-discovery VALUES=/path/to/new/file.yaml
 ```
-
-### Predefined values
-A set of predefined values that point to BMCs deployed via this repository exist in their respective environment's directories:
-- `infra/kind/values-basic-go.yaml`
-- `infra/kind/values-contoso-go.yaml`
-
-The `metal-lab` repository (a standalone containerlab-based environment, see below) ships its own equivalent `values-containerlab-node1.yaml` / `values-containerlab-node2.yaml`.
-
-## Supporting Environments
-This repository contains virtualised or containerised infrastructure environments that mock or emulate physical BMC/server nodes. Refer to the `make help` target in every environment's subdirectory for usage.
-
-### KIND environment
-Manages a [kind](https://kind.sigs.k8s.io/) cluster to run the metal-operator and its dependencies. To simulate BMCs and Servers, it runs a Go-based Redfish Mock Server (modified version of the metal-operator's `bmc/mock/main.go`) that supports using system-specific redfish client mock data like the [DMTF mockup server](https://github.com/DMTF/Redfish-Mockup-Server) but has support for dynamic functions like simulating reboots. The server runs once per client data, i.e. BMC.
-To simulate booting Servers to run the `metalprobe` tool, a custom `boot-operator`-like implementation runs the metalprobe agent once per discovered `ServerBootConfiguration` and reports back bogus data. This works fine for simple tests.
-
-### Vagrant environment
-Manages a [vagrant](https://developer.hashicorp.com/vagrant)-based environment that provides a network setup as close to a physical environment as possible. Its primary focus is to provide a reference setup for a physical lab. It supports development for scripts, ansible playbooks etc. that can be used to setup actual infrastructure. It does not support running tests against its nodes. **Its current state is a work in progress. It can probably be replaced by a containerlab-based setup.**
-
-## Caveats
-### Dependencies on forks
-#### Metal-operator
-The `kind`-environment depends on two services that currently live in a [fork of the metal-operator](https://github.com/simontesar/metal-operator):
-* A Go implementation of a [redfish mock server](https://github.com/simontesar/metal-operator/blob/dell/bmc/mock/main.go) that is included in the upstream metal-operator for testing but modified in the fork to support some dynamic features like `lastResetTime` and replaceable client mock data to be able to test against mocks of specific BMC models.
-* The `metalprobe-mock-controller` that watches `ServerBootConfigs` for BMC mocks and runs a `metalprobe` agent for every instance. It simulates a server controlled by the BMC mock booting up and running `metalprobe` to report to the metal-operator's registry. The reason it lives in the fork is that the `probe`-package of the metal-operator is internal.
