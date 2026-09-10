@@ -13,12 +13,12 @@ The `tests` directory contains a suite of tests based on [chainsaw](https://kyve
 * A metal-operator installation and BMC to run tests against. This repository usually uses the locally virtualised [metal-lab](https://github.com/simontesar/metal-lab) to develop or verify functionality of the actual tests. You can use the lab setup as a reference.
 
 ### Usage
-The server to run a test against is configured by passing a values file to chainsaw. The default file is `infra/kind/values-basic-go.yaml` which points to a Redfish mock setup in the [`kind` environment](environments.md) and should be overridden via `VALUES`.
+The server to run a test against is configured by passing a values file to chainsaw via `VALUES`. There is no default, tests fail unless `VALUES` is set. To just see the suite run, use `infra/kind/values-basic-go.yaml`, which points to a Redfish mock setup in the [`kind` environment](environments.md).
 
 ```bash
 # Examples
-make test                                                                              # Run all tests
-make test/01-bmc-registration                                                          # Run a specific test
+make test VALUES=infra/kind/values-basic-go.yaml                                       # Run all tests
+make test/01-bmc-registration VALUES=infra/kind/values-basic-go.yaml                   # Run a specific test
 make test/03-power-annotation VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC
 ```
 
