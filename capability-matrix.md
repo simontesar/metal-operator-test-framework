@@ -1,6 +1,6 @@
 # Capability Matrix
 
-This document specifies sets of capabilities a BMC needs to support to function with the metal-operator. Right now there is essentially one capability per method of the [`bmc.BMC`](https://github.com/ironcore-dev/metal-operator/blob/f5f9b8121c3180ee40f3c672476ab14f7109562f/bmc/bmc.go#L192)-interface of the metal-operator.
+This document specifies sets of capabilities a BMC needs to support to function with the metal-operator. Right now there is essentially one capability per method of the [`bmc.BMC`](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L191)-interface of the metal-operator.
 
 Which Chainsaw tests cover each capability is tracked in the [coverage document](coverage.md).
 
@@ -25,7 +25,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 ---
 # Interfaces
 
-## [PowerController](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L44)
+## [PowerController](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L43)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -35,7 +35,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `power.reset` | `Reset` | MUST | `POST` `#ComputerSystem.Reset` - reset type from `AnnotationToRedfishMapping` | `{"ResetType": "GracefulRestart" \| "ForceRestart" \| "PowerCycle" \| "ForceOff" \| "ForceOn"}` |
 | `power.wait-state` | `WaitForServerPowerState` | MUST | `GET` `ComputerSystem.PowerState` | - |
 
-## [BootController](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L62)
+## [BootController](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L61)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -43,7 +43,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `boot.order-get` | `GetBootOrder` | SHOULD | `GET` `ComputerSystem.Boot.BootOrder` | - |
 | `boot.order-set` | `SetBootOrder` | SHOULD | `PATCH` `ComputerSystem` | `{"Boot": {"BootOrder": ["<BootOptionReference>", "…"], "BootSourceOverrideEnabled": "Continuous", "BootSourceOverrideTarget": "None"}}` |
 
-## [SystemInspector](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L76)
+## [SystemInspector](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L75)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -52,7 +52,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `inventory.processors` | `GetProcessors` | SHOULD | `GET` `ComputerSystem/Processors` collection (`Processor`) | - |
 | `inventory.storages` | `GetStorages` | SHOULD | `GET` `ComputerSystem/Storage` (`Storage`, `Drives`, `Volumes`); fallback `GET` `ComputerSystem/SimpleStorage` | - |
 
-## [BIOSManager](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L91)
+## [BIOSManager](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L90)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -62,7 +62,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `bios.attr-set-on-reset` | `SetBiosAttributesOnReset` | SHOULD | `PATCH` the `Bios` `@Redfish.Settings` settings object | `{"Attributes": {"<AttrName>": "<value>", …}, "@Redfish.SettingsApplyTime": {"ApplyTime": "OnReset"}}` |
 | `bios.attr-check` | `CheckBiosAttributes` | SHOULD | `GET` `/redfish/v1/Registries` | - |
 
-## [BMCSettingsManager](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L109)
+## [BMCSettingsManager](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L108)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -72,7 +72,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `bmc-settings.set-immediate` | `SetBMCAttributesImmediately` | OPTIONAL | `PATCH` the `Manager` settings object, vendor-specific implementation | `{"Attributes": {"<AttrName>": "<value>", …}, "@Redfish.SettingsApplyTime": {"ApplyTime": "Immediate"}}` |
 | `bmc-settings.attr-check` | `CheckBMCAttributes` | OPTIONAL | `GET` `/redfish/v1/Registries` | - |
 
-## [FirmwareUpdater](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L128)
+## [FirmwareUpdater](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L127)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -82,7 +82,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `firmware.bmc.task` | `GetBMCUpgradeTask` | OPTIONAL | `GET` task monitor / `Task` | - |
 | `firmware.pending-check` | `CheckBMCPendingComponentUpgrade` | OPTIONAL | `GET` `UpdateService/FirmwareInventory` | - |
 
-## [ManagerController](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L147)
+## [ManagerController](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L146)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -90,7 +90,7 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `manager.discover` | `DiscoverManager` | SHOULD | `GET` `/redfish/v1/Managers`; `Manager.GraphicalConsole` (`MaxConcurrentSessions`, `ConnectTypesSupported`) | - |
 | `manager.reset` | `ResetManager` | SHOULD | `POST` `#Manager.Reset` - value must be in `Manager.SupportedResetTypes` | `{"ResetType": "GracefulRestart"}` |
 
-## [AccountManager](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L159)
+## [AccountManager](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L158)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
@@ -99,13 +99,13 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 | `account.list` | `GetAccounts` | OPTIONAL | `GET` `AccountService/Accounts` collection | - |
 | `account.service` | `GetAccountService` | OPTIONAL | `GET` `/redfish/v1/AccountService` | - |
 
-## [IndicatorController](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L174)
+## [IndicatorController](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L173)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
 | `indicator.set-led` | `SetIndicatorLED` | SHOULD | `PATCH` `ComputerSystem` | `{"IndicatorLED": "Lit"}` |
 
-## [EventSubscriber](https://github.com/ironcore-dev/metal-operator/blob/bd0873d4ca3803fbb78232b85794d7ccc8e9d5e6/bmc/bmc.go#L180)
+## [EventSubscriber](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L179)
 
 | Capability id | `BMC` method | Level | Redfish API | Redfish request body |
 |---|---|:---:|---|---|
