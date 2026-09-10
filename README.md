@@ -16,6 +16,31 @@ make test/01-bmc-registration                                                # R
 make test/03-power-annotation VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC.
 ```
 
+### Bring your own BMC
+To run tests against your own BMC, copy  values into a new file:
+```yaml
+bmcIP: "172.16.100.11"
+bmcPort: 443
+bmcScheme: https
+username: admin
+password: password
+model: "Standard PC (Q35 + ICH9, 2009)"
+firmwareVersion: "1.0.0"
+powerState: "On"
+biosVersion: "1.0.0"
+biosSettingNoRebootValue: "+1-555-0100"
+biosSettingRebootValue: "Bios"
+bootOrder: ["Hdd", "Pxe", "Cd"]
+bmcSettingKey: "EmailAlert.1.Address"
+bmcSettingValue: "alerts@example.com"
+```
+
+Adjust the credentials and expectations to their respective values and point the tests to it:
+
+```bash
+make make test/02-discovery VALUES=/path/to/new/file.yaml
+```
+
 ### Predefined values
 A set of predefined values that point to BMCs deployed via this repository exist in their respective environment's directories:
 - `infra/kind/values-basic-go.yaml`
