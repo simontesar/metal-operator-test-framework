@@ -73,29 +73,3 @@ These rows/capabilities include the following placeholders in their `test` field
 | `events.subscribe` | uncovered | - |
 | `events.unsubscribe` | uncovered | - |
 
-**37 capabilities: 23 covered (18 verified, 5 not), 14 uncovered.**
-
-## Uncovered capabilities
-
-Nothing here is uncovered merely because its result goes unasserted - in every case no test causes
-the method to be called at all.
-
-| Capability | `BMC` method | Why it is not reached | What would cover it |
-|---|---|---|---|
-| `power.off-force` | `ForcePowerOff` | needs a graceful shutdown to time out with `--enforce-power-off` set | a mock BMC that ignores `GracefulShutdown` |
-| `bmc.version` | `GetBMCVersion` | only called by `BMCVersionReconciler` | a test that creates a `BMCVersion` CR |
-| `manager.discover` | `DiscoverManager` | only called by `EndpointReconciler`; registration is IP-based | add `macAddress` to `tests/shared/bmc.yaml` so an `Endpoint` is created |
-| `firmware.*` (5 rows) | `FirmwareUpdater` | no `BIOSVersion` / `BMCVersion` CR exists | those CRs plus a reachable firmware image |
-| `account.*` (4 rows) | `AccountManager` | no `BMCUser` CR exists | a test that creates a `BMCUser` |
-| `events.*` (2 rows) | `EventSubscriber` | operator is not started with `--event-url` | set the flag and assert `status.eventsSubscriptionLink` |
-
-## Covered but not verified
-
-Reached by a test, but the test would still pass against a BMC that accepts the call and does nothing.
-
-| Capability | test | Gap |
-|---|---|---|
-| `power.reset` | 03, 09 | asserts only annotation removal; the `ServerClaim` independently guarantees the asserted power state |
-| `manager.reset` | 04 | asserts `lastResetTime != null`, not that it advanced |
-| `inventory.storages` | `Discovery` | storage inventory is read but never asserted |
-| `bmc-settings.attr-pending`, `bmc-settings.attr-check` | 08 | no-ops on HPE/Lenovo, error on the base client; only Dell exercises real Redfish |
