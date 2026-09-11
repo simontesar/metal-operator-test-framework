@@ -10,7 +10,7 @@ This document summarises what tests cover which capabilities in the [capability-
 Some capabilities are covered by multiple tests implicitly because they share common workflows.
 These rows/capabilities include the following placeholders in their `test` field:
 
-| Placeholder | Description | Capability ids |
+| Placeholder | Description | Capabilities covered |
 |---|---|---|
 | `BMC Registration` | Test creates a `BMC` that results in a `Server` resource. | `manager.get`, `inventory.systems`, `inventory.system-info` |
 | `Discovery` | Test waits for the `Server` to reach the `Available` state. | `power.on`, `power.off-graceful`, `power.wait-state`, `boot.override-pxe`, `bios.version`, `inventory.processors`, `inventory.storages` |
@@ -19,7 +19,7 @@ These rows/capabilities include the following placeholders in their `test` field
 
 ## Coverage by test
 
-| Chainsaw test | Capability ids covered |
+| Test | Capabilities covered |
 |---|---|
 | `tests/01-bmc-registration` | `BMC Registration` |
 | `tests/02-discovery` | `BMC Registration`, `Discovery` |
@@ -33,7 +33,7 @@ These rows/capabilities include the following placeholders in their `test` field
 
 ## Coverage by capability
 
-| Capability ID | Test | Verified |
+| Capability ID | Covered by | Verified |
 |---|---|:---:|
 | `power.on` | `Discovery` | yes |
 | `power.off-graceful` | `Discovery` | yes |
