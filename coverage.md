@@ -30,6 +30,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `tests/07-biossettings-reboot`   | `BMC Registration`, `Discovery`, `bios.attr-get`, `bios.attr-pending`, `bios.attr-set-on-reset`, `bios.attr-check`                             |
 | `tests/08-bmcsettings`           | `BMC Registration`, `Discovery`, `bmc-settings.attr-get`, `bmc-settings.attr-pending`, `bmc-settings.set-immediate`, `bmc-settings.attr-check` |
 | `tests/09-persistent-boot-order` | `BMC Registration`, `Discovery`, `boot.order-get`, `boot.order-set`, `power.reset`                                                             |
+| `tests/10-bmcversion`            | `BMC Registration`, `Discovery`, `bmc.version`                                                                                                 |
 
 ## Coverage by capability
 
@@ -52,7 +53,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `bios.attr-pending`          | `tests/06-biossettings-noreboot`, `tests/07-biossettings-reboot`              |   yes    |
 | `bios.attr-set-on-reset`     | `tests/06-biossettings-noreboot`, `tests/07-biossettings-reboot`              |   yes    |
 | `bios.attr-check`            | `tests/06-biossettings-noreboot`, `tests/07-biossettings-reboot`              |   yes    |
-| `bmc.version`                | uncovered                                                                     |    -     |
+| `bmc.version`                | `tests/10-bmcversion`                                                         |   yes    |
 | `bmc-settings.attr-get`      | `tests/08-bmcsettings`                                                        |   yes    |
 | `bmc-settings.attr-pending`  | `tests/08-bmcsettings`                                                        |    no    |
 | `bmc-settings.set-immediate` | `tests/08-bmcsettings`                                                        |   yes    |

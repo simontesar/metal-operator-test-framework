@@ -1,0 +1,95 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: 10-bmcversion
+spec:
+  concurrent: false
+  bindings:
+    - name: bmcName
+      value: (join('-', ['compatibility', $namespace]))
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: ($bmcName)
+              status:
+                state: Enabled
+                (firmwareVersion != ''): true
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', [$bmcName, 'system-0']))
+              status:
+                state: Available
+    - name: apply-bmcversion
+      # Fetches the current BMC version to use as wanted version, so that
+      # `BMCVersion`-reconciliation does not result in an upgrade.
+      bindings:
+        - name: bmcFirmwareVersion
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', $bmcName).status.firmwareVersion)
+      try:
+        - apply:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'bmc']))
+              spec:
+                bmcRef:
+                  name: ($bmcName)
+                version: ($bmcFirmwareVersion)
+                image:
+                  URI: unused-no-upgrade-expected
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'bmc']))
+              status:
+                state: Completed
+    - name: assert-no-upgrade-triggered
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'bmc']))
+              spec:
+                (serverMaintenanceRefs || 'absent'): 'absent'
+              status:
+                (upgradeTask || 'absent'): 'absent'
+                (conditions || 'absent'): 'absent'
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', [$bmcName, 'system-0']))
+              spec:
+                (serverMaintenanceRef || 'absent'): 'absent'
+              status:
+                state: Available
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: ($bmcName)
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
