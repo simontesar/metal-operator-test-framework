@@ -30,6 +30,7 @@ To run tests against your own BMC, copy these values into a new file:
 bmcIP: "172.16.100.11"
 bmcPort: 443
 bmcScheme: https
+gracefulPowerOffWindow: 10s
 username: admin
 password: password
 model: "Standard PC (Q35 + ICH9, 2009)"

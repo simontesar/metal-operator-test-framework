@@ -1,0 +1,73 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: 12-force-power-off
+spec:
+  concurrent: false
+  bindings:
+    - name: bmcName
+      value: (join('-', ['compatibility', $namespace]))
+    - name: serverName
+      value: (join('-', ['compatibility', $namespace, 'system-0']))
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                state: Available
+                powerState: "Off"
+    - name: power-on-out-of-band
+      try:
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+                annotations:
+                  metal.ironcore.dev/operation: force-on-server
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "On"
+    - name: assert-graceful-did-not-take-effect
+      try:
+        - script:
+            timeout: 2m
+            env:
+            content: sleep 10s
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                powerState: "On"
+    - name: assert-server-force-powered-off
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                state: Available
+                powerState: "Off"
