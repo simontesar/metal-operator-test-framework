@@ -55,6 +55,6 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                (serverMaintenanceRef || 'absent'): 'absent'
+                (serverMaintenanceRef == null): true
               status:
                 state: Available
