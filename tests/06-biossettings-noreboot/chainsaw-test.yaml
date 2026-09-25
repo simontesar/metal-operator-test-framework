@@ -65,4 +65,4 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'noreboot']))
               spec:
-                (serverMaintenanceRef || 'absent'): 'absent'
+                (serverMaintenanceRef == null): true
