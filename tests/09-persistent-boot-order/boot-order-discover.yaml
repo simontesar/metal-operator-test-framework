@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'boot-order']))
+data:
+  order: ""
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: boot-order-discover
+  namespace: ($namespace)
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    resourceNames:
+      - (join('-', ['compatibility', $namespace, 'boot-order']))
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: boot-order-discover
+  namespace: ($namespace)
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: ($namespace)
+roleRef:
+  kind: Role
+  name: boot-order-discover
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: boot-order-discover
+  namespace: ($namespace)
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: discover
+          image: curlimages/curl:8.11.1
+          securityContext:
+            runAsUser: 0
+          env:
+            - name: URL
+              value: (join('', [$values.bmcScheme, '://', $values.bmcIP, ':', to_string($values.bmcPort), $systemURI, '/BootOptions']))
+            - name: CREDENTIALS
+              value: (join(':', [$values.username, $values.password]))
+            - name: CONFIGMAP_NAME
+              value: (join('-', ['compatibility', $namespace, 'boot-order']))
+            - name: POD_NAMESPACE
+              value: ($namespace)
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              apk add --no-cache jq
+              body=$(curl -fsS -k -u "$CREDENTIALS" "$URL")
+              echo "BootOptions response: $body"
+              order=$(printf '%s' "$body" \
+                | jq -r '[.Members[]."@odata.id" | split("/") | last] | join(",")')
+              echo "discovered boot order: $order"
+
+              TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              CACERT=/var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              API="https://${KUBERNETES_SERVICE_HOST}:${KUBERNETES_SERVICE_PORT}"
+              curl -fsS --cacert "$CACERT" -H "Authorization: Bearer $TOKEN" \
+                -H "Content-Type: application/merge-patch+json" \
+                -X PATCH "$API/api/v1/namespaces/$POD_NAMESPACE/configmaps/$CONFIGMAP_NAME" \
+                -d "{\"data\":{\"order\":\"$order\"}}"
