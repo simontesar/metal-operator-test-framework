@@ -48,7 +48,6 @@ spec:
     - name: assert-biossettings-applied
       try:
         - assert:
-            timeout: 10m
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: BIOSSettings
