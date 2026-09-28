@@ -44,7 +44,7 @@ spec:
       try:
         - apply:
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
               kind: BMCVersion
               metadata:
                 name: (join('-', [$bmcName, 'bmc']))
@@ -57,7 +57,7 @@ spec:
         - assert:
             timeout: 2m
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
               kind: BMCVersion
               metadata:
                 name: (join('-', [$bmcName, 'bmc']))
@@ -67,7 +67,7 @@ spec:
       try:
         - assert:
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
               kind: BMCVersion
               metadata:
                 name: (join('-', [$bmcName, 'bmc']))
@@ -82,8 +82,7 @@ spec:
               kind: Server
               metadata:
                 name: (join('-', [$bmcName, 'system-0']))
-              spec:
-                (serverMaintenanceRef == null): true
+                (annotations."metal.ironcore.dev/operation" == null): true
               status:
                 state: Available
         - assert:

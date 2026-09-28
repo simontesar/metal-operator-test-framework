@@ -1,4 +1,4 @@
-apiVersion: metal.ironcore.dev/v1alpha1
+apiVersion: system.metal.ironcore.dev/v1alpha1
 kind: BIOSSettings
 metadata:
   name: (join('-', ['compatibility', $namespace, 'reboot']))

@@ -1,4 +1,4 @@
-apiVersion: metal.ironcore.dev/v1alpha1
+apiVersion: system.metal.ironcore.dev/v1alpha1
 kind: BIOSSettings
 metadata:
   name: (join('-', ['compatibility', $namespace, 'noreboot']))
@@ -6,6 +6,9 @@ spec:
   serverRef:
     name: (join('-', ['compatibility', $namespace, 'system-0']))
   version: ($values.biosVersion)
+  # Without a policy the metal-maintenance-operator creates a ServerMaintenance
+  # resource with an empty spec.policy that gets rejected by the CRD's webhook
+  serverMaintenancePolicy: Enforced
   settingsFlow:
     - name: admin-phone
       priority: 1
