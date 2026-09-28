@@ -39,7 +39,7 @@ spec:
       try:
         - assert:
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: system.metal.ironcore.dev/v1alpha1
               kind: BIOSSettings
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'reboot']))
@@ -54,7 +54,6 @@ spec:
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
-              spec:
-                (serverMaintenanceRef == null): true
+                (annotations."metal.ironcore.dev/operation" == null): true
               status:
                 state: Available

@@ -35,22 +35,12 @@ spec:
       try:
         - apply:
             file: bmcsettings.yaml
-        - assert:
-            timeout: 2m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: BMC
-              metadata:
-                name: (join('-', ['compatibility', $namespace]))
-              spec:
-                bmcSettingsRef:
-                  name: (join('-', ['compatibility', $namespace, 'bmc']))
     - name: assert-bmcsettings-applied
       try:
         - assert:
             timeout: 30m
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
               kind: BMCSettings
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'bmc']))
@@ -65,7 +55,6 @@ spec:
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
-              spec:
-                (serverMaintenanceRef == null): true
+                (annotations."metal.ironcore.dev/operation" == null): true
               status:
                 state: Available
