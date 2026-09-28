@@ -72,10 +72,10 @@ spec:
               metadata:
                 name: (join('-', [$bmcName, 'bmc']))
               spec:
-                (serverMaintenanceRefs || 'absent'): 'absent'
+                (serverMaintenanceRefs == null): true
               status:
-                (upgradeTask || 'absent'): 'absent'
-                (conditions || 'absent'): 'absent'
+                (upgradeTask == null): true
+                (conditions == null): true
         - assert:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
@@ -83,7 +83,7 @@ spec:
               metadata:
                 name: (join('-', [$bmcName, 'system-0']))
               spec:
-                (serverMaintenanceRef || 'absent'): 'absent'
+                (serverMaintenanceRef == null): true
               status:
                 state: Available
         - assert:

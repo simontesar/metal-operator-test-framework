@@ -9,5 +9,4 @@ spec:
   settingsFlow:
     - name: admin-phone
       priority: 1
-      settings:
-        AdminPhone: ($values.biosSettingNoRebootValue)
+      settings: (from_items([[($values.biosSettingNoRebootKey), ($values.biosSettingNoRebootValue)]]))

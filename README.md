@@ -36,9 +36,9 @@ model: "Standard PC (Q35 + ICH9, 2009)"
 firmwareVersion: "1.0.0"
 powerState: "On"
 biosVersion: "1.0.0"
-biosSettingNoRebootValue: "+1-555-0100"
+biosSettingNoRebootKey: "AssetTag"
+biosSettingNoRebootValue: "compat-test-06"
 biosSettingRebootValue: "Bios"
-bootOrder: ["Hdd", "Pxe", "Cd"]
 bmcSettingKey: "EmailAlert.1.Address"
 bmcSettingValue: "alerts@example.com"
 ```
@@ -46,5 +46,93 @@ bmcSettingValue: "alerts@example.com"
 Adjust the credentials and expectations to your respective values and point the tests to it:
 
 ```bash
-make test/02-discovery VALUES=/path/to/new/file.yaml
+make ASSERT_TIMEOUT=2m VALUES=/path/to/new/file.yaml test/01-bmc-registration
 ```
+
+You will probably encounter an error like:
+```shell
+chainsaw test --values /home/user/src/metal-operator-test-framework/values-t160.yaml --parallel 1 --assert-timeout 2m  tests/01-bmc-registration
+Version: 0.2.15                                             
+Loading default configuration...
+- Using test file: chainsaw-test
+- TestDirs [tests/01-bmc-registration]
+- Quiet false                                               
+- SkipDelete false                                          
+- FailFast false                                            
+- Namespace ''                                              
+- FastNamespaceDeletion false                               
+- FullName false                                            
+- IncludeTestRegex ''                                       
+- ExcludeTestRegex ''                                       
+- ApplyTimeout 5s                                           
+- AssertTimeout 2m0s                                        
+- CleanupTimeout 30s                                        
+- DeleteTimeout 15s                                         
+- ErrorTimeout 30s                                          
+- ExecTimeout 5s                                            
+- DeletionPropagationPolicy Background
+- Parallel 1                                                
+- Values [/home/user/src/metal-operator-test-framework/values-t160.yaml]
+- Template true                                             
+- NoCluster false                                           
+- PauseOnFailure false                                      
+Loading tests...                                            
+- 01-bmc-registration (tests/01-bmc-registration)
+Loading values...                                           
+Running tests...                                            
+=== RUN   chainsaw                                          
+=== PAUSE chainsaw                                          
+=== CONT  chainsaw                                          
+=== RUN   chainsaw/01-bmc-registration
+    | 06:44:56 | 01-bmc-registration | @chainsaw          | CREATE    | OK    | v1/Namespace @ chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | TRY       | BEGIN |
+    | 06:44:56 | 01-bmc-registration | register-bmc       | APPLY     | RUN   | metal.ironcore.dev/v1alpha1/BMCSecret @ compatibility-chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | CREATE    | OK    | metal.ironcore.dev/v1alpha1/BMCSecret @ compatibility-chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | APPLY     | DONE  | metal.ironcore.dev/v1alpha1/BMCSecret @ compatibility-chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | APPLY     | RUN   | metal.ironcore.dev/v1alpha1/BMC @ compatibility-chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | CREATE    | OK    | metal.ironcore.dev/v1alpha1/BMC @ compatibility-chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | APPLY     | DONE  | metal.ironcore.dev/v1alpha1/BMC @ compatibility-chainsaw-elegant-puma
+    | 06:44:56 | 01-bmc-registration | register-bmc       | TRY       | END   |
+    | 06:44:56 | 01-bmc-registration | assert-bmc-enabled | TRY       | BEGIN |
+    | 06:44:56 | 01-bmc-registration | assert-bmc-enabled | ASSERT    | RUN   | metal.ironcore.dev/v1alpha1/BMC @ compatibility-chainsaw-elegant-puma
+    | 06:46:56 | 01-bmc-registration | assert-bmc-enabled | ASSERT    | ERROR | metal.ironcore.dev/v1alpha1/BMC @ compatibility-chainsaw-elegant-puma
+        === ERROR                                           
+        -------------------------------------------------------------------
+        metal.ironcore.dev/v1alpha1/BMC/compatibility-chainsaw-elegant-puma
+        -------------------------------------------------------------------
+        * status.firmwareVersion: Invalid value: "7.30.10.50": Expected value: "1.0.0"
+        * status.model: Invalid value: "16G Monolithic": Expected value: "Standard PC (Q35 + ICH9, 2009)"
+
+        --- expected                                        
+        +++ actual                                          
+        @@ -3,8 +3,8 @@                                     
+         metadata:                                          
+           name: compatibility-chainsaw-elegant-puma
+         status:                                            
+        -  firmwareVersion: 1.0.0
+        -  model: Standard PC (Q35 + ICH9, 2009)
+        +  firmwareVersion: 7.30.10.50
+        +  model: 16G Monolithic
+           powerState: "On"                                 
+           state: Enabled                                   
+    | 06:46:56 | 01-bmc-registration | assert-bmc-enabled | TRY       | END   |
+    | 06:46:56 | 01-bmc-registration | register-bmc       | CLEANUP   | BEGIN |
+    | 06:46:56 | 01-bmc-registration | register-bmc       | DELETE    | OK    | metal.ironcore.dev/v1alpha1/BMC @ compatibility-chainsaw-elegant-puma
+    | 06:46:57 | 01-bmc-registration | register-bmc       | DELETE    | OK    | metal.ironcore.dev/v1alpha1/BMCSecret @ compatibility-chainsaw-elegant-puma
+    | 06:46:57 | 01-bmc-registration | register-bmc       | CLEANUP   | END   |
+    | 06:46:57 | 01-bmc-registration | @chainsaw          | CLEANUP   | BEGIN |
+    | 06:46:57 | 01-bmc-registration | @chainsaw          | DELETE    | OK    | v1/Namespace @ chainsaw-elegant-puma
+    | 06:47:02 | 01-bmc-registration | @chainsaw          | CLEANUP   | END   |
+--- FAIL: chainsaw (125.32s)                                
+    --- FAIL: chainsaw/01-bmc-registration (125.32s)
+FAIL                                                        
+Tests Summary...                                            
+- Passed  tests 0                                           
+- Failed  tests 1                                           
+- Skipped tests 0                                           
+Done with failures.                                         
+Error: some tests failed                                    
+make: *** [Makefile:59: test/01-bmc-registration] Error 1
+```
+
+A mismatch like this means the expectations in your `VALUES` file need to be adjusted to reality.
