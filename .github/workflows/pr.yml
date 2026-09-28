@@ -52,9 +52,7 @@ jobs:
         working-directory: metal-lab
         run: |
           touch kubeconfig.yaml
-          sudo -E make deploy \
-            metal-operator-deploy-wait boot-operator-deploy-wait \
-            fedhcp-deploy-wait tftp-deploy-wait
+          sudo -E make deploy-all
           sudo chown -R "$USER:$USER" .
 
       - name: Run test suite
@@ -69,8 +67,10 @@ jobs:
         run: |
           mkdir -p artifacts
           kubectl get all -A > artifacts/k8s-all.txt 2>&1 || true
-          kubectl get bmc,server,serverclaim,biossettings,bmcsettings,server,serverbootconfigurations -A -o yaml > artifacts/metal-crs.yaml 2>&1 || true
+          kubectl get bmc,server,serverclaim,serverbootconfigurations -A -o yaml > artifacts/metal-crs.yaml 2>&1 || true
+          kubectl get biossettings.system.metal.ironcore.dev,bmcsettings.baseboard.metal.ironcore.dev,bmcversions.baseboard.metal.ironcore.dev,servermaintenances.maintenance.metal.ironcore.dev -A -o yaml > artifacts/maintenance-crs.yaml 2>&1 || true
           kubectl -n metal-operator-system logs deploy/metal-operator-controller-manager --tail=-1 > artifacts/metal-operator.log 2>&1 || true
+          kubectl -n metal-maintenance-operator-system logs deploy/metal-maintenance-operator-controller-manager --tail=-1 > artifacts/metal-maintenance-operator.log 2>&1 || true
           kubectl -n boot-operator-system logs deploy/boot-operator-controller-manager --tail=-1 > artifacts/boot-operator.log 2>&1 || true
           cp metal-lab/vm/node1/console.log artifacts/node1-console.log 2>/dev/null || true
           cp metal-lab/vm/node2/console.log artifacts/node2-console.log 2>/dev/null || true
