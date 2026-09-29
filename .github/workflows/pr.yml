@@ -59,7 +59,7 @@ jobs:
         run: |
           mkdir -p "${{ github.workspace }}/artifacts"
           make test \
-            ASSERT_TIMEOUT=25m \
+            ASSERT_TIMEOUT=10m \
             CHAINSAW_EXTRA_FLAGS="--report-format JSON --report-name chainsaw-report --report-path ${{ github.workspace }}/artifacts"
 
       - name: Collect diagnostics
