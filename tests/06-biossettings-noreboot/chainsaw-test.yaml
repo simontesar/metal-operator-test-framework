@@ -31,6 +31,22 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
+# Ensure that there is a baseline value set so that a run after an earlier
+# successful run does not result in a no-op.
+    - name: prepare-baseline
+      try:
+        - apply:
+            file: biossettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: system.metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'baseline']))
+              status:
+                state: Applied
+        - delete:
+            file: biossettings-baseline.yaml
     - name: apply-biossettings
       try:
         - apply:
@@ -45,6 +61,9 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'noreboot']))
               status:
                 state: Applied
+                (flowState[?name == 'noreboot'] | [0]):
+                  flowState: Applied
+                  (conditions[?type == 'SettingsUpdateIssued'] | [0].status): "True"
     - name: assert-maintenance-released
       try:
         - assert:
@@ -56,3 +75,19 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'noreboot']))
               spec:
                 (serverMaintenanceRef == null): true
+    - name: restore-baseline
+      try:
+        - delete:
+            file: biossettings-noreboot.yaml
+        - apply:
+            file: biossettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: system.metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'baseline']))
+              status:
+                state: Applied
+        - delete:
+            file: biossettings-baseline.yaml

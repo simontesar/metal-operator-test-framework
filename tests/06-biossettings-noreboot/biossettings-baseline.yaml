@@ -1,7 +1,7 @@
 apiVersion: system.metal.ironcore.dev/v1alpha1
 kind: BIOSSettings
 metadata:
-  name: (join('-', ['compatibility', $namespace, 'noreboot']))
+  name: (join('-', ['compatibility', $namespace, 'baseline']))
 spec:
   serverRef:
     name: (join('-', ['compatibility', $namespace, 'system-0']))
@@ -12,4 +12,4 @@ spec:
   settingsFlow:
     - name: noreboot
       priority: 1
-      settings: (from_items([[($values.biosSettingNoRebootKey), ($values.biosSettingNoRebootValue)]]))
+      settings: (from_items([[($values.biosSettingNoRebootKey), ($values.biosSettingNoRebootBaselineValue)]]))
