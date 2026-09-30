@@ -8,7 +8,6 @@ spec:
   version: ($values.biosVersion)
   serverMaintenancePolicy: Enforced
   settingsFlow:
-    - name: boot-mode
+    - name: reboot
       priority: 1
-      settings:
-        BootMode: ($values.biosSettingRebootValue)
+      settings: (from_items([[($values.biosSettingRebootKey), ($values.biosSettingRebootValue)]]))
