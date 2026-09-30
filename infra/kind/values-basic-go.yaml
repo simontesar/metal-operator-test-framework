@@ -3,6 +3,7 @@ bmcPort: 8000
 bmcScheme: http
 username: foo
 password: bar
-model: "15G Monolithic"
 firmwareVersion: "7.10.30.00"
-powerState: "On"
+01-bmc-registration:
+  model: "15G Monolithic"
+  powerState: "On"

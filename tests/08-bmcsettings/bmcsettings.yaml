@@ -10,4 +10,4 @@ spec:
   settingsFlow:
     - name: bmc-setting
       priority: 1
-      settings: (from_items([[($values.bmcSettingKey), ($values.bmcSettingValue)]]))
+      settings: (from_items([[($values."08-bmcsettings".key), ($values."08-bmcsettings".value)]]))

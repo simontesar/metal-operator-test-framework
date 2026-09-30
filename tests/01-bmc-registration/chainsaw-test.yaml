@@ -31,6 +31,6 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
               status:
                 state: Enabled
-                model: ($values.model)
+                model: ($values."01-bmc-registration".model)
                 firmwareVersion: ($values.firmwareVersion)
-                powerState: ($values.powerState)
+                powerState: ($values."01-bmc-registration".powerState)

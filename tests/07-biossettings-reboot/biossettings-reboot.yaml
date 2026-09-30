@@ -10,4 +10,4 @@ spec:
   settingsFlow:
     - name: reboot
       priority: 1
-      settings: (from_items([[($values.biosSettingRebootKey), ($values.biosSettingRebootValue)]]))
+      settings: (from_items([[($values."07-biossettings-reboot".key), ($values."07-biossettings-reboot".value)]]))
