@@ -32,18 +32,22 @@ bmcPort: 443
 bmcScheme: https
 username: admin
 password: password
-model: "Standard PC (Q35 + ICH9, 2009)"
 firmwareVersion: "1.0.0"
-powerState: "On"
 biosVersion: "1.0.0"
-biosSettingNoRebootKey: "AssetTag"
-biosSettingNoRebootValue: "compat-test-06"
-biosSettingNoRebootBaselineValue: "compat-base"
-biosSettingRebootKey: "BootMode"
-biosSettingRebootValue: "Bios"
-biosSettingRebootBaselineValue: "Uefi"
-bmcSettingKey: "EmailAlert.1.Address"
-bmcSettingValue: "alerts@example.com"
+01-bmc-registration:
+  model: "Standard PC (Q35 + ICH9, 2009)"
+  powerState: "On"
+06-biossettings-noreboot:
+  key: "AssetTag"
+  value: "compat-test-06"
+  baselineValue: "compat-base"
+07-biossettings-reboot:
+  key: "BootMode"
+  value: "Bios"
+  baselineValue: "Uefi"
+08-bmcsettings:
+  key: "EmailAlert.1.Address"
+  value: "alerts@example.com"
 ```
 
 Adjust the credentials and expectations to your respective values and point the tests to it:
