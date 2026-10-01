@@ -55,6 +55,7 @@ spec:
               status:
                 state: Applied
         - delete:
+            timeout: 2m
             file: biossettings-baseline.yaml
         - assert:
             timeout: 15m
@@ -111,6 +112,7 @@ spec:
               status:
                 state: Applied
         - delete:
+            timeout: 2m
             file: biossettings-baseline.yaml
         - assert:
             timeout: 15m
