@@ -1,0 +1,13 @@
+apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+kind: BMCSettings
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'bmc-baseline']))
+spec:
+  bmcRef:
+    name: (join('-', ['compatibility', $namespace]))
+  version: ($values.firmwareVersion)
+  serverMaintenancePolicy: Enforced
+  settingsFlow:
+    - name: bmc-setting
+      priority: 1
+      settings: (from_items([[($values."08-bmcsettings".key), ($values."08-bmcsettings".baselineValue)]]))
