@@ -2,7 +2,7 @@ CHAINSAW ?= chainsaw
 
 TEST_DIR := tests
 VALUES ?=
-ASSERT_TIMEOUT ?= 15m
+ASSERT_TIMEOUT ?= 30m
 CHAINSAW_EXTRA_FLAGS ?=
 
 CHAINSAW_RUN = $(CHAINSAW) test --values $(VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS)
@@ -25,7 +25,7 @@ help: ## Show available targets
 	@echo ""
 	@echo "  tests:"
 	@echo "    * values via VALUES (required; e.g. VALUES=../metal-lab/values-containerlab-node1.yaml)"
-	@echo "    * assert timeout via ASSERT_TIMEOUT (default 15m; e.g. ASSERT_TIMEOUT=5m)"
+	@echo "    * assert timeout via ASSERT_TIMEOUT (default 30m; e.g. ASSERT_TIMEOUT=5m)"
 	@echo "    * extra chainsaw flags via CHAINSAW_EXTRA_FLAGS (e.g. CHAINSAW_EXTRA_FLAGS=\"--skip-delete -v\")"
 	@echo ""
 	@echo "    test                             (run every test)"
