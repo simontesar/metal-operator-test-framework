@@ -109,23 +109,42 @@ spec:
                 name: ($jobName)
               status:
                 (conditions[?type == 'Complete'] | [0].status): "True"
+# Manually go through a power-cycle step-by-step. Using the `power-cycle-server`
+# annotation instead would lead to a race between chainsaw, the BMC and the
+# actual power cycle because the annotation gets consumed immediately when the
+# reset is _issued_.
     - name: power-cycle
       try:
         - patch:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
-              kind: Server
+              kind: ServerClaim
               metadata:
-                name: (join('-', ['compatibility', $namespace, 'system-0']))
-                annotations:
-                  metal.ironcore.dev/operation: power-cycle-server
+                name: (join('-', ['compatibility', $namespace]))
+              spec:
+                power: "Off"
         - assert:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
-                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "Off"
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerClaim
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              spec:
+                power: "On"
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 powerState: "On"
     - name: assert-boot-order-after-cycle
