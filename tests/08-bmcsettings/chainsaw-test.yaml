@@ -39,6 +39,23 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
+# Ensure that there is a baseline value set so that a run after an earlier
+# successful run does not result in a no-op.
+    - name: prepare-baseline
+      try:
+        - apply:
+            file: bmcsettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'bmc-baseline']))
+              status:
+                state: Applied
+        - delete:
+            timeout: 2m
+            file: bmcsettings-baseline.yaml
     - name: apply-bmcsettings
       try:
         - apply:
@@ -46,7 +63,6 @@ spec:
     - name: assert-bmcsettings-applied
       try:
         - assert:
-            timeout: 30m
             resource:
               apiVersion: baseboard.metal.ironcore.dev/v1alpha1
               kind: BMCSettings
@@ -66,3 +82,21 @@ spec:
                 (annotations."metal.ironcore.dev/operation" == null): true
               status:
                 state: Available
+    - name: restore-baseline
+      try:
+        - delete:
+            timeout: 2m
+            file: bmcsettings.yaml
+        - apply:
+            file: bmcsettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'bmc-baseline']))
+              status:
+                state: Applied
+        - delete:
+            timeout: 2m
+            file: bmcsettings-baseline.yaml

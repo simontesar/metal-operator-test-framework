@@ -54,6 +54,7 @@ spec:
               status:
                 state: Applied
         - delete:
+            timeout: 2m
             file: biossettings-baseline.yaml
     - name: apply-biossettings
       try:
@@ -98,4 +99,5 @@ spec:
               status:
                 state: Applied
         - delete:
+            timeout: 2m
             file: biossettings-baseline.yaml
