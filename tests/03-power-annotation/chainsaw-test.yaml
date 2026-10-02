@@ -13,6 +13,8 @@ spec:
         - apply:
             file: ../shared/bmc.yaml
       cleanup:
+        - sleep:
+            duration: 10s
         - delete:
             timeout: 2m
             ref:
