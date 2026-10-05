@@ -29,7 +29,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `tests/06-biossettings-noreboot` | `BMC Registration`, `Discovery`, `bios.attr-get`, `bios.attr-pending`, `bios.attr-set-on-reset`, `bios.attr-check`                             |
 | `tests/07-biossettings-reboot`   | `BMC Registration`, `Discovery`, `bios.attr-get`, `bios.attr-pending`, `bios.attr-set-on-reset`, `bios.attr-check`                             |
 | `tests/08-bmcsettings`           | `BMC Registration`, `Discovery`, `bmc-settings.attr-get`, `bmc-settings.attr-pending`, `bmc-settings.set-immediate`, `bmc-settings.attr-check` |
-| `tests/09-persistent-boot-order` | `BMC Registration`, `Discovery`, `boot.order-get`, `boot.order-set`, `power.reset`                                                             |
+| `tests/09-persistent-boot-order` | `BMC Registration`, `Discovery`, `boot.order-get`, `boot.order-set`, `power.on`, `power.off-graceful`                                          |
 | `tests/10-bmcversion`            | `BMC Registration`, `Discovery`, `bmc.version`                                                                                                 |
 | `tests/12-force-power-off`       | `BMC Registration`, `Discovery`, `power.off-graceful`, `power.off-force`, `power.wait-state`                                                   |
 
@@ -40,7 +40,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `power.on`                   | `Discovery`                                                                   |   yes    |
 | `power.off-graceful`         | `Discovery`                                                                   |   yes    |
 | `power.off-force`            | `tests/03-power-annotation` See **[0]**                                       |    no    |
-| `power.reset`                | `tests/03-power-annotation`, `tests/09-persistent-boot-order`                 |    no    |
+| `power.reset`                | `tests/03-power-annotation`                                                   |    no    |
 | `power.wait-state`           | `Discovery`                                                                   |   yes    |
 | `boot.override-pxe`          | `Discovery`                                                                   |   yes    |
 | `boot.order-get`             | `tests/09-persistent-boot-order`                                              |   yes    |
