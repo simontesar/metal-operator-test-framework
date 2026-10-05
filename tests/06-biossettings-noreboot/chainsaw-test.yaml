@@ -89,6 +89,7 @@ spec:
     - name: restore-baseline
       try:
         - delete:
+            timeout: 2m
             file: biossettings-noreboot.yaml
         - apply:
             file: biossettings-baseline.yaml
