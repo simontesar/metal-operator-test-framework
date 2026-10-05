@@ -48,6 +48,7 @@ biosVersion: "1.0.0"
 08-bmcsettings:
   key: "EmailAlert.1.Address"
   value: "alerts@example.com"
+  baselineValue: "compat-base@example.com"
 ```
 
 Adjust the credentials and expectations to your respective values and point the tests to it:
