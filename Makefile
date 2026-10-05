@@ -17,7 +17,8 @@ TESTS := \
 	07-biossettings-reboot \
 	08-bmcsettings \
 	09-persistent-boot-order \
-	10-bmcversion
+	10-bmcversion \
+	11-bmcuser
 
 .PHONY: help
 help: ## Show available targets
@@ -39,6 +40,7 @@ help: ## Show available targets
 	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute; needs a Dell BMC)"
 	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo "    test/10-bmcversion               (BMCVersion, version read without upgrade)"
+	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete; needs metal-maintenance-operator)"
 	@echo ""
 
 .PHONY: require-values
