@@ -37,10 +37,10 @@ help: ## Show available targets
 	@echo "    test/05-indicator-led            (indicator LED)"
 	@echo "    test/06-biossettings-noreboot    (BIOSSettings, non-reboot setting)"
 	@echo "    test/07-biossettings-reboot      (BIOSSettings, reboot-required setting)"
-	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute; needs a Dell BMC)"
+	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute)"
 	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo "    test/10-bmcversion               (BMCVersion, version read without upgrade)"
-	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete; needs metal-maintenance-operator)"
+	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete)"
 	@echo ""
 
 .PHONY: require-values
