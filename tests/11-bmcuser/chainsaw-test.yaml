@@ -6,7 +6,7 @@ spec:
   concurrent: false
   bindings:
     - name: userName
-      value: mtfuser
+      value: foobar
     - name: roleID
       value: ReadOnly
   steps:
