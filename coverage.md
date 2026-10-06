@@ -31,6 +31,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `tests/08-bmcsettings`           | `BMC Registration`, `Discovery`, `bmc-settings.attr-get`, `bmc-settings.attr-pending`, `bmc-settings.set-immediate`, `bmc-settings.attr-check` |
 | `tests/09-persistent-boot-order` | `BMC Registration`, `Discovery`, `boot.order-get`, `boot.order-set`, `power.on`, `power.off-graceful`                                          |
 | `tests/10-bmcversion`            | `BMC Registration`, `Discovery`, `bmc.version`                                                                                                 |
+| `tests/11-bmcuser`               | `BMC Registration`, `account.service`, `account.list`, `account.create-update`, `account.delete`                                               |
 | `tests/12-force-power-off`       | `BMC Registration`, `Discovery`, `power.off-graceful`, `power.off-force`, `power.wait-state`                                                   |
 
 ## Coverage by capability
@@ -67,10 +68,10 @@ These rows/capabilities include the following placeholders in their `test` field
 | `manager.get`                | `BMC Registration`                                                            |   yes    |
 | `manager.discover`           | uncovered                                                                     |    -     |
 | `manager.reset`              | `tests/04-bmc-reset`                                                          |    no    |
-| `account.create-update`      | uncovered                                                                     |    -     |
-| `account.delete`             | uncovered                                                                     |    -     |
-| `account.list`               | uncovered                                                                     |    -     |
-| `account.service`            | uncovered                                                                     |    -     |
+| `account.create-update`      | `tests/11-bmcuser`                                                |   yes    |
+| `account.delete`             | `tests/11-bmcuser`                                                |   yes    |
+| `account.list`               | `tests/11-bmcuser`                                                |   yes    |
+| `account.service`            | `tests/11-bmcuser`                                                |   yes    |
 | `indicator.set-led`          | `tests/05-indicator-led`                                                      |   yes    |
 | `events.subscribe`           | uncovered                                                                     |    -     |
 | `events.unsubscribe`         | uncovered                                                                     |    -     |
