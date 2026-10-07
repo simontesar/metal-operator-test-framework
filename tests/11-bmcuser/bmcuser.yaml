@@ -1,0 +1,11 @@
+apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+kind: BMCUser
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'user']))
+  labels:
+    metal-operator-test-framework/namespace: ($namespace)
+spec:
+  userName: ($userName)
+  roleID: ($roleID)
+  bmcRef:
+    name: (join('-', ['compatibility', $namespace]))

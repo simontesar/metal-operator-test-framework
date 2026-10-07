@@ -1,0 +1,126 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: 11-bmcuser
+spec:
+  concurrent: false
+  bindings:
+    - name: userName
+      value: foobar
+    - name: roleID
+      value: ReadOnly
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: create-user
+      try:
+        - apply:
+            file: bmcuser.yaml
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'user']))
+              spec:
+                (bmcSecretRef.name != null): true
+              status:
+                (id != null): true
+    - name: assert-effective-secret
+      try:
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'user']))
+              (status.effectiveBMCSecretRef.name == spec.bmcSecretRef.name): true
+    - name: assert-generated-secret
+      bindings:
+        - name: secretName
+          value: (x_k8s_get($client, 'baseboard.metal.ironcore.dev/v1alpha1', 'BMCUser', '', join('-', ['compatibility', $namespace, 'user'])).spec.bmcSecretRef.name)
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMCSecret
+              metadata:
+                name: ($secretName)
+                ownerReferences:
+                  - kind: BMCUser
+                    name: (join('-', ['compatibility', $namespace, 'user']))
+    - name: rotate-credentials
+      bindings:
+        - name: user
+          value: (x_k8s_get($client, 'baseboard.metal.ironcore.dev/v1alpha1', 'BMCUser', '', join('-', ['compatibility', $namespace, 'user'])))
+        - name: previousSecret
+          value: ($user.spec.bmcSecretRef.name)
+        - name: accountID
+          value: ($user.status.id)
+      try:
+        - patch:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'user']))
+                annotations:
+                  metal.ironcore.dev/operation: rotate-credentials
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'user']))
+                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              spec:
+                (bmcSecretRef.name != $previousSecret): true
+              status:
+                id: ($accountID)
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'user']))
+              (status.effectiveBMCSecretRef.name == spec.bmcSecretRef.name): true
+              status:
+                id: ($accountID)
+    - name: delete-user
+      try:
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              name: (join('-', ['compatibility', $namespace, 'user']))
+        - error:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCUser
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'user']))
