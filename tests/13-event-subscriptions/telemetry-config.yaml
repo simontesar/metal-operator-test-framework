@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ($telemetryConfigName)
+  namespace: ($operatorNamespace)
+data:
+  config.yaml: (to_string($values | {apiVersion:'telemetry.metal.ironcore.dev/v1alpha1', subscriptionReconcileInterval:'10s', perBMCTimeout:'30s', testEventInterval:'1m', testEventTimeout:'30s', eventBasedHardware:[{vendor:$vendor, models:[$model], testMessageId:"13-event-subscriptions".testMessageId, testSeverity:"13-event-subscriptions".testSeverity, testOriginOfCondition:"13-event-subscriptions".testOriginOfCondition}]}))
