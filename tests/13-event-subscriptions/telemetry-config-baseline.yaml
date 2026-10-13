@@ -4,4 +4,8 @@ metadata:
   name: ($telemetryConfigName)
   namespace: ($operatorNamespace)
 data:
-  config.yaml: (to_string($values | {apiVersion:'telemetry.metal.ironcore.dev/v1alpha1', subscriptionReconcileInterval:'10s', perBMCTimeout:'30s', eventBasedHardware:`[]`}))
+  config.yaml: |
+    apiVersion: telemetry.metal.ironcore.dev/v1alpha1
+    subscriptionReconcileInterval: 10s
+    perBMCTimeout: 30s
+    eventBasedHardware: []
