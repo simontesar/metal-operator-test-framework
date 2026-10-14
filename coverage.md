@@ -33,6 +33,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `tests/10-bmcversion`            | `BMC Registration`, `Discovery`, `bmc.version`                                                                                                 |
 | `tests/11-bmcuser`               | `BMC Registration`, `account.service`, `account.list`, `account.create-update`, `account.delete`                                               |
 | `tests/12-force-power-off`       | `BMC Registration`, `Discovery`, `power.off-graceful`, `power.off-force`, `power.wait-state`                                                   |
+| `tests/13-event-subscriptions`   | `BMC Registration`, `events.subscribe`, `events.unsubscribe`, `events.list`, `events.test-event`, `events.delivery`                             |
 
 ## Coverage by capability
 
@@ -73,8 +74,11 @@ These rows/capabilities include the following placeholders in their `test` field
 | `account.list`               | `tests/11-bmcuser`                                                |   yes    |
 | `account.service`            | `tests/11-bmcuser`                                                |   yes    |
 | `indicator.set-led`          | `tests/05-indicator-led`                                                      |   yes    |
-| `events.subscribe`           | uncovered                                                                     |    -     |
-| `events.unsubscribe`         | uncovered                                                                     |    -     |
+| `events.subscribe`           | `tests/13-event-subscriptions`                                                |   yes    |
+| `events.unsubscribe`         | `tests/13-event-subscriptions`                                                |   yes    |
+| `events.list`                | `tests/13-event-subscriptions`                                                |   yes    |
+| `events.test-event`          | `tests/13-event-subscriptions`                                                |   yes    |
+| `events.delivery`            | `tests/13-event-subscriptions`                                                |   yes    |
 
 #### Footnotes
 **[0]**: The test is using the `Reset`-method of the `BMC` interface, but the result is the same capability being tested as using the `ForcePowerOff`-method.
