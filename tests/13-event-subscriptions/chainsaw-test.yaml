@@ -1,0 +1,86 @@
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: 13-event-subscriptions
+spec:
+  concurrent: false
+  bindings:
+    - name: operatorNamespace
+      value: metal-maintenance-operator-system
+    - name: operatorDeployment
+      value: metal-maintenance-operator-controller-manager
+    - name: metricsService
+      value: metal-maintenance-operator-controller-manager-metrics-service
+    - name: metricsReaderRole
+      value: metal-maintenance-operator-metrics-reader
+    - name: telemetryConfigName
+      value: telemetry-collector-config
+    - name: subscriptionFinalizer
+      value: telemetry.metal.ironcore.dev/subscriptions
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: subscribe
+      bindings:
+        - name: vendor
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', join('-', ['compatibility', $namespace])).status.manufacturer)
+        - name: model
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', join('-', ['compatibility', $namespace])).status.model)
+      try:
+        - apply:
+            file: telemetry-config.yaml
+        # The subscription controller watches BMCs, not its ConfigMap. Touch the
+        # BMC so the new config is picked up without waiting for a requeue.
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+                annotations:
+                  metal-operator-test-framework/reconcile: subscribe
+    - name: unsubscribe
+      try:
+        - apply:
+            file: telemetry-config-baseline.yaml
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+                annotations:
+                  metal-operator-test-framework/reconcile: unsubscribe
+        # The finalizer is only released once every subscription was deleted.
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+                (contains(finalizers || `[]`, $subscriptionFinalizer)): false

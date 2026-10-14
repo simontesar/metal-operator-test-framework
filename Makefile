@@ -18,7 +18,8 @@ TESTS := \
 	08-bmcsettings \
 	09-persistent-boot-order \
 	10-bmcversion \
-	11-bmcuser
+	11-bmcuser \
+	13-event-subscriptions
 
 .PHONY: help
 help: ## Show available targets
@@ -41,6 +42,7 @@ help: ## Show available targets
 	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo "    test/10-bmcversion               (BMCVersion, version read without upgrade)"
 	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete)"
+	@echo "    test/13-event-subscriptions      (Redfish event subscriptions via metal-maintenance-operator telemetry)"
 	@echo ""
 
 .PHONY: require-values

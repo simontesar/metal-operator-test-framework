@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ($telemetryConfigName)
+  namespace: ($operatorNamespace)
+data:
+  config.yaml: |
+    apiVersion: telemetry.metal.ironcore.dev/v1alpha1
+    subscriptionReconcileInterval: 10s
+    perBMCTimeout: 30s
+    eventBasedHardware: []
