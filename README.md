@@ -49,6 +49,10 @@ biosVersion: "1.0.0"
   key: "EmailAlert.1.Address"
   value: "alerts@example.com"
   baselineValue: "compat-base@example.com"
+13-event-subscriptions:
+  testMessageId: "TestEventId" # a MessageId your BMC accepts in SubmitTestEvent, e.g. "SYS1000" on Dell iDRAC
+  testSeverity: "OK"
+  testOriginOfCondition: "/redfish/v1/Managers/1"
 ```
 
 Adjust the credentials and expectations to your respective values and point the tests to it:
