@@ -1,3 +1,8 @@
+# Telemetry config of the metal-maintenance-operator. It opts exactly the
+# vendor/model of the BMC under test into Redfish event subscriptions and
+# enables the SubmitTestEvent health check. Rendered as JSON, which is valid YAML
+# for the operator's parser. `$values` is piped in only to give the
+# multi-select hash a non-null current node.
 apiVersion: v1
 kind: ConfigMap
 metadata:

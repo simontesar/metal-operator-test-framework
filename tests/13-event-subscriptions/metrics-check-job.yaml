@@ -1,0 +1,58 @@
+# Reads the metal-maintenance-operator's metrics until the SubmitTestEvent
+# health check of this BMC reports a successful round trip: the BMC accepted
+# the test event and delivered it to the operator's receiver.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: events-metrics
+  namespace: ($namespace)
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: (join('-', ['compatibility', $namespace, 'metrics-reader']))
+subjects:
+  - kind: ServiceAccount
+    name: events-metrics
+    namespace: ($namespace)
+roleRef:
+  kind: ClusterRole
+  name: ($metricsReaderRole)
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: events-metrics-check
+  namespace: ($namespace)
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: events-metrics
+      containers:
+        - name: check
+          image: curlimages/curl:8.11.1
+          env:
+            - name: METRICS_URL
+              value: (join('', ['https://', $metricsService, '.', $operatorNamespace, '.svc:8443/metrics']))
+            - name: SERIES
+              value: (join('', ['redfish_event_pipeline_test_timestamp{hostname="compatibility-', $namespace, '",result="success"}']))
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              token=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              for i in $(seq 1 30); do
+                if curl -fsS -k -H "Authorization: Bearer $token" "$METRICS_URL" > /tmp/metrics; then
+                  if grep -F "$SERIES" /tmp/metrics; then
+                    echo "OK"
+                    exit 0
+                  fi
+                fi
+                sleep 5
+              done
+              echo "FAIL: $SERIES not reported, pipeline test series found:"
+              grep '^redfish_event_pipeline_test_timestamp' /tmp/metrics || true
+              exit 1

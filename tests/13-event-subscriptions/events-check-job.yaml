@@ -1,0 +1,90 @@
+# Directly checks the BMC's Redfish EventService for the subscriptions the
+# metal-maintenance-operator manages for this BMC. With MODE=present it expects
+# exactly one Event and one MetricReport subscription and that they survive a
+# few reconcile intervals. With MODE=absent it expects none.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ($jobName)
+  namespace: ($namespace)
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: check
+          image: curlimages/curl:8.11.1
+          env:
+            - name: BMC_URL
+              value: (join('', [$values.bmcScheme, '://', $values.bmcIP, ':', to_string($values.bmcPort)]))
+            - name: CREDENTIALS
+              value: (join(':', [$values.username, $values.password]))
+            - name: BMC_NAME
+              value: (join('-', ['compatibility', $namespace]))
+            - name: MODE
+              value: ($mode)
+            - name: STABLE_SECONDS
+              value: "30"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              get() { curl -fsS -k -u "$CREDENTIALS" "$BMC_URL$1"; }
+              # Value of a string property of a JSON document.
+              field() { printf '%s' "$1" | tr -d '\n' | grep -o "\"$2\" *: *\"[^\"]*\"" | head -n1 | sed 's/.*: *"\(.*\)"$/\1/' || true; }
+
+              # Prints "<uri> <EventFormatType> <Context> <Destination>" for every
+              # subscription pointing at this BMC's receiver paths.
+              list_ours() {
+                col=$(get /redfish/v1/EventService/Subscriptions)
+                for uri in $(printf '%s' "$col" | tr -d '\n' | grep -o '"@odata.id" *: *"[^"]*/Subscriptions/[^"]*"' | sed 's/.*: *"\(.*\)"$/\1/'); do
+                  sub=$(get "$uri")
+                  dest=$(field "$sub" Destination)
+                  case "$dest" in
+                    */serverevents/*/"$BMC_NAME") echo "$uri $(field "$sub" EventFormatType) $(field "$sub" Context) $dest" ;;
+                  esac
+                done
+              }
+              count() { printf '%s\n' "$1" | grep -c " [^ ]*/$2/$BMC_NAME\$" || true; }
+
+              svc=$(get /redfish/v1/EventService)
+              echo "EventService: $svc"
+              printf '%s' "$svc" | tr -d ' \n' | grep -q '"ServiceEnabled":true' || { echo "FAIL: EventService is not enabled"; exit 1; }
+              printf '%s' "$svc" | grep -q 'EventService.SubmitTestEvent' || { echo "FAIL: EventService has no SubmitTestEvent action"; exit 1; }
+
+              case "$MODE" in
+              present)
+                for i in $(seq 1 12); do
+                  subs=$(list_ours)
+                  [ "$(count "$subs" alerts)" -ge 1 ] && [ "$(count "$subs" metricsreport)" -ge 1 ] && break
+                  sleep 5
+                done
+                echo "subscriptions:"; echo "$subs"
+                for pair in alerts:Event metricsreport:MetricReport; do
+                  kind=${pair%%:*}; format=${pair#*:}
+                  n=$(count "$subs" "$kind")
+                  [ "$n" -eq 1 ] || { echo "FAIL: expected exactly one $kind subscription, found $n"; exit 1; }
+                  printf '%s\n' "$subs" | grep " [^ ]*/$kind/$BMC_NAME\$" | grep -q "^[^ ]* $format metal-operator " || {
+                    echo "FAIL: the $kind subscription must report EventFormatType $format and Context metal-operator"; exit 1; }
+                done
+                # The operator deletes subscriptions whose EventFormatType it can't
+                # read back and recreates them on the next reconcile.
+                sleep "$STABLE_SECONDS"
+                again=$(list_ours)
+                echo "subscriptions after ${STABLE_SECONDS}s:"; echo "$again"
+                [ "$(printf '%s\n' "$subs" | cut -d' ' -f1 | sort)" = "$(printf '%s\n' "$again" | cut -d' ' -f1 | sort)" ] || {
+                  echo "FAIL: subscriptions were recreated between reconciles"; exit 1; }
+                ;;
+              absent)
+                for i in $(seq 1 12); do
+                  subs=$(list_ours)
+                  [ -z "$subs" ] && break
+                  sleep 5
+                done
+                [ -z "$subs" ] || { echo "FAIL: subscriptions left on the BMC:"; echo "$subs"; exit 1; }
+                ;;
+              *)
+                echo "unknown MODE $MODE"; exit 1 ;;
+              esac
+              echo "OK"

@@ -27,13 +27,13 @@ Which Chainsaw tests cover each capability is tracked in the [coverage document]
 
 ## [PowerController](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L43)
 
-| Capability id        | `BMC` method              | Level | Redfish API                                                                   | Redfish request body                                                                            |
-|----------------------|---------------------------|:-----:|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| `power.on`           | `PowerOn`                 | MUST  | `POST` `#ComputerSystem.Reset`                                                | `{"ResetType": "On"}`                                                                           |
-| `power.off-graceful` | `PowerOff`                | MUST  | `POST` `#ComputerSystem.Reset`                                                | `{"ResetType": "GracefulShutdown"}`                                                             |
-| `power.off-force`    | `ForcePowerOff`           | MUST  | `POST` `#ComputerSystem.Reset`                                                | `{"ResetType": "ForceOff"}`                                                                     |
-| `power.reset`        | `Reset`                   | OPTIONAL  | `POST` `#ComputerSystem.Reset` - reset type from `AnnotationToRedfishMapping` | `{"ResetType": "GracefulRestart" \| "ForceRestart" \| "PowerCycle" \| "ForceOff" \| "ForceOn"}` |
-| `power.wait-state`   | `WaitForServerPowerState` | MUST  | `GET` `ComputerSystem.PowerState`                                             | -                                                                                               |
+| Capability id        | `BMC` method              |  Level   | Redfish API                                                                   | Redfish request body                                                                            |
+|----------------------|---------------------------|:--------:|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| `power.on`           | `PowerOn`                 |   MUST   | `POST` `#ComputerSystem.Reset`                                                | `{"ResetType": "On"}`                                                                           |
+| `power.off-graceful` | `PowerOff`                |   MUST   | `POST` `#ComputerSystem.Reset`                                                | `{"ResetType": "GracefulShutdown"}`                                                             |
+| `power.off-force`    | `ForcePowerOff`           |   MUST   | `POST` `#ComputerSystem.Reset`                                                | `{"ResetType": "ForceOff"}`                                                                     |
+| `power.reset`        | `Reset`                   | OPTIONAL | `POST` `#ComputerSystem.Reset` - reset type from `AnnotationToRedfishMapping` | `{"ResetType": "GracefulRestart" \| "ForceRestart" \| "PowerCycle" \| "ForceOff" \| "ForceOn"}` |
+| `power.wait-state`   | `WaitForServerPowerState` |   MUST   | `GET` `ComputerSystem.PowerState`                                             | -                                                                                               |
 
 ## [BootController](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L61)
 

@@ -44,6 +44,32 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
               status:
                 state: Enabled
+    # Event subscriptions are managed by the metal-maintenance-operator's
+    # telemetry pipeline, which only subscribes BMCs of these vendors.
+    - name: preconditions
+      try:
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                (contains(['Dell Inc.', 'HPE', 'Lenovo', 'Supermicro'], manufacturer)): true
+                (model != null): true
+        - assert:
+            timeout: 30s
+            resource:
+              apiVersion: apps/v1
+              kind: Deployment
+              metadata:
+                name: ($operatorDeployment)
+                namespace: ($operatorNamespace)
+              spec:
+                template:
+                  spec:
+                    (length(containers[?name == 'manager'].args[] | [?@ == '--enable-telemetry' || @ == '--enable-telemetry=true']) > `0`): true
     - name: subscribe
       bindings:
         - name: vendor
@@ -63,6 +89,59 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
                 annotations:
                   metal-operator-test-framework/reconcile: subscribe
+      # Restore ConfigMap to default value in case the run fails before the unsubscribe step
+      cleanup:
+        - script:
+            env:
+              - name: NAMESPACE
+                value: ($operatorNamespace)
+              - name: NAME
+                value: ($telemetryConfigName)
+            content: |
+              kubectl -n "$NAMESPACE" create configmap "$NAME" --dry-run=client -o yaml \
+                --from-literal=config.yaml='{"apiVersion":"telemetry.metal.ironcore.dev/v1alpha1","eventBasedHardware":[],"perBMCTimeout":"30s","subscriptionReconcileInterval":"10s"}' |
+                kubectl apply -f -
+    - name: assert-subscriptions-on-bmc
+      bindings:
+        - name: jobName
+          value: events-check-present
+        - name: mode
+          value: present
+      try:
+        - apply:
+            file: events-check-job.yaml
+        - assert:
+            timeout: 3m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ($jobName)
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+      catch:
+        - podLogs:
+            selector: (join('=', ['job-name', $jobName]))
+    - name: assert-event-delivery
+      try:
+        - apply:
+            file: metrics-check-job.yaml
+        - assert:
+            timeout: 4m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: events-metrics-check
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+      catch:
+        - podLogs:
+            selector: job-name=events-metrics-check
+        - podLogs:
+            namespace: ($operatorNamespace)
+            selector: control-plane=controller-manager
+            tail: 30
     - name: unsubscribe
       try:
         - apply:
@@ -84,3 +163,24 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace]))
                 (contains(finalizers || `[]`, $subscriptionFinalizer)): false
+    - name: assert-subscriptions-removed-from-bmc
+      bindings:
+        - name: jobName
+          value: events-check-absent
+        - name: mode
+          value: absent
+      try:
+        - apply:
+            file: events-check-job.yaml
+        - assert:
+            timeout: 3m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ($jobName)
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+      catch:
+        - podLogs:
+            selector: (join('=', ['job-name', $jobName]))

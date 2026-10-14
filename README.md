@@ -148,3 +148,12 @@ make: *** [Makefile:59: test/01-bmc-registration] Error 1
 ```
 
 A mismatch like this means the expectations in your `VALUES` file need to be adjusted to reality.
+
+### Event subscription test
+`tests/13-event-subscriptions` covers the `events.*` capabilities. Since metal-operator v0.8.0 they are only used by the [metal-maintenance-operator](https://github.com/ironcore-dev/metal-maintenance-operator)'s telemetry pipeline, so the test needs more than the other tests:
+* The metal-maintenance-operator runs with `--enable-telemetry` and a `--telemetry-receiver-url` the BMC can reach.
+* If the BMC serves a self-signed certificate, the operator also needs `--telemetry-bmc-insecure-tls`. The telemetry pipeline has its own BMC client and ignores `--skip-cert-validation`.
+* The BMC reports a `Manufacturer` the operator subscribes: `Dell Inc.`, `HPE`, `Lenovo` or `Supermicro`.
+* The test takes over the operator's `telemetry-collector-config` ConfigMap and resets it to an empty hardware list when done. Don't run it against an installation that relies on that ConfigMap.
+
+The [`metal-lab`](https://github.com/simontesar/metal-lab) is set up accordingly.
