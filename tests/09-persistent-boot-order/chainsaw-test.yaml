@@ -11,6 +11,16 @@ spec:
             file: ../shared/bmcsecret.yaml
         - apply:
             file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -31,7 +41,47 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
+    - name: claim-server
+      try:
+        - apply:
+            file: ignitionsecret.yaml
+        - apply:
+            file: serverclaim.yaml
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
+              status:
+                state: Reserved
+                powerState: "On"
+    # Fetches the current boot order directly from the BMC's redfish API.
+    # The Job needs to write the result into a ConfigMap for chainsaw to fetch
+    # later. If the script was ran by chainsaw directly, network access to the
+    # BMC would be necessary but is avoided by design of this framework.
+    - name: discover-boot-order
+      bindings:
+        - name: systemURI
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', join('-', ['compatibility', $namespace, 'system-0'])).spec.systemURI)
+      try:
+        - apply:
+            file: boot-order-discover.yaml
+        - assert:
+            timeout: 2m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: boot-order-discover
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+    # Use the fist four elements of the fetched boot order in reverse to have a
+    # change in most cases.
     - name: patch-boot-order
+      bindings:
+        - name: discoveredBootOrder
+          value: (split(x_k8s_get($client, 'v1', 'ConfigMap', $namespace, join('-', ['compatibility', $namespace, 'boot-order'])).data.order, ','))
       try:
         - patch:
             resource:
@@ -40,20 +90,15 @@ spec:
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               spec:
-                bootOrder:
-                  - name: ($values.bootOrder[0])
-                    device: ($values.bootOrder[0])
-                    priority: 1
-                  - name: ($values.bootOrder[1])
-                    device: ($values.bootOrder[1])
-                    priority: 2
-                  - name: ($values.bootOrder[2])
-                    device: ($values.bootOrder[2])
-                    priority: 3
+                bootOrder: (([{name:($discoveredBootOrder[-1]),device:($discoveredBootOrder[-1]),priority:`1`},{name:($discoveredBootOrder[-2]),device:($discoveredBootOrder[-2]),priority:`2`},{name:($discoveredBootOrder[-3]),device:($discoveredBootOrder[-3]),priority:`3`}])[?device != null])
     - name: assert-boot-order-on-bmc
       bindings:
         - name: jobName
           value: bootorder-check
+        - name: systemURI
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', join('-', ['compatibility', $namespace, 'system-0'])).spec.systemURI)
+        - name: discoveredBootOrder
+          value: (map(&device, x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', join('-', ['compatibility', $namespace, 'system-0'])).spec.bootOrder))
       try:
         - apply:
             file: bootorder-check-job.yaml
@@ -66,29 +111,52 @@ spec:
                 name: ($jobName)
               status:
                 (conditions[?type == 'Complete'] | [0].status): "True"
+# Manually go through a power-cycle step-by-step. Using the `power-cycle-server`
+# annotation instead would lead to a race between chainsaw, the BMC and the
+# actual power cycle because the annotation gets consumed immediately when the
+# reset is _issued_.
     - name: power-cycle
       try:
         - patch:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
-              kind: Server
+              kind: ServerClaim
               metadata:
-                name: (join('-', ['compatibility', $namespace, 'system-0']))
-                annotations:
-                  metal.ironcore.dev/operation: power-cycle-server
+                name: (join('-', ['compatibility', $namespace]))
+              spec:
+                power: "Off"
         - assert:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
-                (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
+              status:
+                powerState: "Off"
+        - patch:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerClaim
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              spec:
+                power: "On"
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 powerState: "On"
     - name: assert-boot-order-after-cycle
       bindings:
         - name: jobName
           value: bootorder-check-after-cycle
+        - name: systemURI
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', join('-', ['compatibility', $namespace, 'system-0'])).spec.systemURI)
+        - name: discoveredBootOrder
+          value: (map(&device, x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', join('-', ['compatibility', $namespace, 'system-0'])).spec.bootOrder))
       try:
         - apply:
             file: bootorder-check-job.yaml
@@ -101,3 +169,10 @@ spec:
                 name: ($jobName)
               status:
                 (conditions[?type == 'Complete'] | [0].status): "True"
+    - name: release-server
+      try:
+        - delete:
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerClaim
+              name: (join('-', ['compatibility', $namespace]))

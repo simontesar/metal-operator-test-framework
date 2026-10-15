@@ -2,7 +2,7 @@ CHAINSAW ?= chainsaw
 
 TEST_DIR := tests
 VALUES ?=
-ASSERT_TIMEOUT ?= 15m
+ASSERT_TIMEOUT ?= 30m
 CHAINSAW_EXTRA_FLAGS ?=
 
 CHAINSAW_RUN = $(CHAINSAW) test --values $(VALUES) --parallel 1 --assert-timeout $(ASSERT_TIMEOUT) $(CHAINSAW_EXTRA_FLAGS)
@@ -18,7 +18,9 @@ TESTS := \
 	08-bmcsettings \
 	09-persistent-boot-order \
 	10-bmcversion \
-	12-force-power-off
+	12-force-power-off \
+	11-bmcuser \
+	13-event-subscriptions
 
 .PHONY: help
 help: ## Show available targets
@@ -26,7 +28,7 @@ help: ## Show available targets
 	@echo ""
 	@echo "  tests:"
 	@echo "    * values via VALUES (required; e.g. VALUES=../metal-lab/values-containerlab-node1.yaml)"
-	@echo "    * assert timeout via ASSERT_TIMEOUT (default 15m; e.g. ASSERT_TIMEOUT=5m)"
+	@echo "    * assert timeout via ASSERT_TIMEOUT (default 30m; e.g. ASSERT_TIMEOUT=5m)"
 	@echo "    * extra chainsaw flags via CHAINSAW_EXTRA_FLAGS (e.g. CHAINSAW_EXTRA_FLAGS=\"--skip-delete -v\")"
 	@echo ""
 	@echo "    test                             (run every test)"
@@ -37,10 +39,12 @@ help: ## Show available targets
 	@echo "    test/05-indicator-led            (indicator LED)"
 	@echo "    test/06-biossettings-noreboot    (BIOSSettings, non-reboot setting)"
 	@echo "    test/07-biossettings-reboot      (BIOSSettings, reboot-required setting)"
-	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute; needs a Dell BMC)"
+	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute)"
 	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo "    test/10-bmcversion               (BMCVersion, version read without upgrade)"
 	@echo "    test/12-force-power-off          (forced power off after a graceful shutdown is ignored)"
+	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete)"
+	@echo "    test/13-event-subscriptions      (Redfish event subscriptions via metal-maintenance-operator telemetry)"
 	@echo ""
 
 .PHONY: require-values

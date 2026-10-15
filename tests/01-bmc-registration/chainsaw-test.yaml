@@ -13,6 +13,16 @@ spec:
             file: ../shared/bmcsecret.yaml
         - apply:
             file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -23,6 +33,6 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
               status:
                 state: Enabled
-                model: ($values.model)
+                model: ($values."01-bmc-registration".model)
                 firmwareVersion: ($values.firmwareVersion)
-                powerState: ($values.powerState)
+                powerState: ($values."01-bmc-registration".powerState)

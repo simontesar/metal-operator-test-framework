@@ -2,6 +2,8 @@ apiVersion: metal.ironcore.dev/v1alpha1
 kind: BMC
 metadata:
   name: (join('-', ['compatibility', $namespace]))
+  labels:
+    metal-operator-test-framework/namespace: ($namespace)
 spec:
   bmcSecretRef:
     name: (join('-', ['compatibility', $namespace]))

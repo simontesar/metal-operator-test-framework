@@ -11,6 +11,16 @@ spec:
             file: ../shared/bmcsecret.yaml
         - apply:
             file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -31,26 +41,32 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
+# Ensure that there is a baseline value set so that a run after an earlier
+# successful run does not result in a no-op.
+    - name: prepare-baseline
+      try:
+        - apply:
+            file: bmcsettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'bmc-baseline']))
+              status:
+                state: Applied
+        - delete:
+            timeout: 2m
+            file: bmcsettings-baseline.yaml
     - name: apply-bmcsettings
       try:
         - apply:
             file: bmcsettings.yaml
-        - assert:
-            timeout: 2m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: BMC
-              metadata:
-                name: (join('-', ['compatibility', $namespace]))
-              spec:
-                bmcSettingsRef:
-                  name: (join('-', ['compatibility', $namespace, 'bmc']))
     - name: assert-bmcsettings-applied
       try:
         - assert:
-            timeout: 30m
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
               kind: BMCSettings
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'bmc']))
@@ -65,7 +81,24 @@ spec:
               kind: Server
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
-              spec:
-                (serverMaintenanceRef || 'absent'): 'absent'
+                (annotations."metal.ironcore.dev/operation" == null): true
               status:
                 state: Available
+    - name: restore-baseline
+      try:
+        - delete:
+            timeout: 2m
+            file: bmcsettings.yaml
+        - apply:
+            file: bmcsettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'bmc-baseline']))
+              status:
+                state: Applied
+        - delete:
+            timeout: 2m
+            file: bmcsettings-baseline.yaml

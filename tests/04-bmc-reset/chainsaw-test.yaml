@@ -1,5 +1,4 @@
 # 04 — BMC reset
-# - Should be extended to asser status.lastResetTime once testing agains physical servers
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
@@ -13,6 +12,16 @@ spec:
             file: ../shared/bmcsecret.yaml
         - apply:
             file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -24,6 +33,9 @@ spec:
               status:
                 state: Enabled
     - name: graceful-restart-bmc
+      bindings:
+        - name: previousResetTime
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', join('-', ['compatibility', $namespace])).status.lastResetTime)
       try:
         - patch:
             resource:
@@ -33,8 +45,6 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
                 annotations:
                   metal.ironcore.dev/operation: graceful-restart-bmc
-    - name: assert-bmc-reset-complete
-      try:
         - assert:
             resource:
               apiVersion: metal.ironcore.dev/v1alpha1
@@ -44,4 +54,4 @@ spec:
                 (annotations."metal.ironcore.dev/operation" || 'absent'): 'absent'
               status:
                 state: Enabled
-                (lastResetTime != null): true
+                (lastResetTime != $previousResetTime): true

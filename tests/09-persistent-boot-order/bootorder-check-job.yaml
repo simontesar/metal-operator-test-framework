@@ -14,11 +14,11 @@ spec:
           image: curlimages/curl:8.11.1
           env:
             - name: URL
-              value: (join('', [$values.bmcScheme, '://', $values.bmcIP, ':', to_string($values.bmcPort), '/redfish/v1/Systems/1']))
+              value: (join('', [$values.bmcScheme, '://', $values.bmcIP, ':', to_string($values.bmcPort), $systemURI]))
             - name: CREDENTIALS
               value: (join(':', [$values.username, $values.password]))
             - name: ORDER
-              value: (join('', ['"BootOrder":["', join('","', $values.bootOrder), '"]']))
+              value: (join('', ['"BootOrder":["', join('","', $discoveredBootOrder), '"]']))
           command: ["/bin/sh", "-c"]
           args:
             - |

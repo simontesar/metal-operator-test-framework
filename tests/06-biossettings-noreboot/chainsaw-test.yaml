@@ -11,6 +11,16 @@ spec:
             file: ../shared/bmcsecret.yaml
         - apply:
             file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
     - name: assert-bmc-enabled
       try:
         - assert:
@@ -31,39 +41,66 @@ spec:
                 name: (join('-', ['compatibility', $namespace, 'system-0']))
               status:
                 state: Available
+# Ensure that there is a baseline value set so that a run after an earlier
+# successful run does not result in a no-op.
+    - name: prepare-baseline
+      try:
+        - apply:
+            file: biossettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: system.metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'baseline']))
+              status:
+                state: Applied
+        - delete:
+            timeout: 2m
+            file: biossettings-baseline.yaml
     - name: apply-biossettings
       try:
         - apply:
             file: biossettings-noreboot.yaml
-        - assert:
-            timeout: 2m
-            resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
-              kind: Server
-              metadata:
-                name: (join('-', ['compatibility', $namespace, 'system-0']))
-              spec:
-                biosSettingsRef:
-                  name: (join('-', ['compatibility', $namespace, 'noreboot']))
     - name: assert-biossettings-applied
       try:
         - assert:
-            timeout: 10m
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: system.metal.ironcore.dev/v1alpha1
               kind: BIOSSettings
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'noreboot']))
               status:
                 state: Applied
+                (flowState[?name == 'noreboot'] | [0]):
+                  flowState: Applied
+                  (conditions[?type == 'SettingsUpdateIssued'] | [0].status): "True"
     - name: assert-maintenance-released
       try:
         - assert:
             timeout: 5m
             resource:
-              apiVersion: metal.ironcore.dev/v1alpha1
+              apiVersion: system.metal.ironcore.dev/v1alpha1
               kind: BIOSSettings
               metadata:
                 name: (join('-', ['compatibility', $namespace, 'noreboot']))
               spec:
-                (serverMaintenanceRef || 'absent'): 'absent'
+                (serverMaintenanceRef == null): true
+    - name: restore-baseline
+      try:
+        - delete:
+            timeout: 2m
+            file: biossettings-noreboot.yaml
+        - apply:
+            file: biossettings-baseline.yaml
+        - assert:
+            resource:
+              apiVersion: system.metal.ironcore.dev/v1alpha1
+              kind: BIOSSettings
+              metadata:
+                name: (join('-', ['compatibility', $namespace, 'baseline']))
+              status:
+                state: Applied
+        - delete:
+            timeout: 2m
+            file: biossettings-baseline.yaml
