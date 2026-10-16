@@ -1,0 +1,137 @@
+# Creates a scenario where the metal-operator issues a "ForceOff" reset by
+# booting an image that ignores ACPI and verifying that the server still powered
+# off after the graceful window.
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: 12-force-power-off
+spec:
+  concurrent: false
+  bindings:
+    - name: serverName
+      value: (join('-', ['compatibility', $namespace, 'system-0']))
+    # Time to sleep before assuming the boot has reached the OS
+    - name: osBootWait
+      value: ($values."12-force-power-off".osBootWait || '2m')
+    # The metal-operator's --power-polling-timeout
+    - name: powerPollingTimeout
+      value: ($values."12-force-power-off".powerPollingTimeout || `15`)
+    # Seconds beyond the power polling timeout allowed for the force-off to take effect
+    - name: forceOffDelay
+      value: ($values."12-force-power-off".forceOffDelay || `90`)
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: (join('-', ['compatibility', $namespace]))
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                state: Available
+                powerState: "Off"
+    # Boots an image ignoring ACPI to avoid graceful shutdown
+    - name: claim-server
+      try:
+        - apply:
+            file: ignitionsecret.yaml
+        - apply:
+            file: serverclaim.yaml
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                state: Reserved
+                powerState: "On"
+    # Wait for the OS to actually boot, otherwise firmware handles ACPI and might
+    # respect graceful shutdown
+    - name: wait-for-os
+      try:
+        - script:
+            timeout: 10m
+            env:
+              - name: OS_BOOT_WAIT
+                value: ($osBootWait)
+            content: sleep "$OS_BOOT_WAIT"
+    # Create a Job pataching the Server's power state to off and asserts via
+    # Redfish API that the power state chagnged in a time window that is outside
+    # the window for a graceful shutdown, i.e. the force-off took effect
+    - name: force-power-off
+      bindings:
+        - name: systemURI
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', $serverName).spec.systemURI)
+      try:
+        - apply:
+            file: rbac.yaml
+        - apply:
+            file: force-off-job.yaml
+        # Require the Job to finish either way but fail fast when it failed for
+        # internal reasons
+        - assert:
+            timeout: 10m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: force-off-check
+              status:
+                (conditions[?type == 'Complete' || type == 'Failed'] | [0].status): "True"
+        - assert:
+            timeout: 5s
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: force-off-check
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+      finally:
+        - podLogs:
+            selector: job-name=force-off-check
+    - name: assert-server-off
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                powerState: "Off"
+    - name: release-server
+      try:
+        - delete:
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: ServerClaim
+              name: (join('-', ['compatibility', $namespace]))

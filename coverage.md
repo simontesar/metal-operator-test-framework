@@ -32,7 +32,7 @@ These rows/capabilities include the following placeholders in their `test` field
 | `tests/09-persistent-boot-order` | `BMC Registration`, `Discovery`, `boot.order-get`, `boot.order-set`, `power.on`, `power.off-graceful`                                          |
 | `tests/10-bmcversion`            | `BMC Registration`, `Discovery`, `bmc.version`                                                                                                 |
 | `tests/11-bmcuser`               | `BMC Registration`, `account.service`, `account.list`, `account.create-update`, `account.delete`                                               |
-| `tests/12-force-power-off`       | `BMC Registration`, `Discovery`, `power.off-graceful`, `power.off-force`, `power.wait-state`                                                   |
+| `tests/12-force-power-off`       | `BMC Registration`, `Discovery`, `power.on`, `power.off-graceful`, `power.off-force`, `power.wait-state`, `boot.override-pxe`                  |
 | `tests/13-event-subscriptions`   | `BMC Registration`, `events.subscribe`, `events.unsubscribe`, `events.list`, `events.test-event`, `events.delivery`                             |
 
 ## Coverage by capability
@@ -41,7 +41,7 @@ These rows/capabilities include the following placeholders in their `test` field
 |------------------------------|-------------------------------------------------------------------------------|:--------:|
 | `power.on`                   | `Discovery`                                                                   |   yes    |
 | `power.off-graceful`         | `Discovery`                                                                   |   yes    |
-| `power.off-force`            | `tests/03-power-annotation` See **[0]**                                       |    no    |
+| `power.off-force`            | `tests/12-force-power-off`, `tests/03-power-annotation` See **[0]**           |   yes    |
 | `power.reset`                | `tests/03-power-annotation`                                                   |    no    |
 | `power.wait-state`           | `Discovery`                                                                   |   yes    |
 | `boot.override-pxe`          | `Discovery`                                                                   |   yes    |
