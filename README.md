@@ -49,6 +49,10 @@ biosVersion: "1.0.0"
   key: "EmailAlert.1.Address"
   value: "alerts@example.com"
   baselineValue: "compat-base@example.com"
+12-force-power-off: # optionally override the defaults
+  osBootWait: 120 # time to sleep before assuming the boot has reached the OS
+  powerPollingTimeout: 15 #  must equal the metal-operator's --power-polling-timeout to the the Job
+  forceOffDelay: 90 # seconds allowed beyond powerPollingTimeout for the ForceOff to take effect
 13-event-subscriptions:
   testMessageId: "TestEventId" # a MessageId your BMC accepts in SubmitTestEvent, e.g. "SYS1000" on Dell iDRAC
   testSeverity: "OK"

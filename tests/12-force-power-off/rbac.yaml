@@ -1,0 +1,30 @@
+# Allows the force-off-check Job to patch the ServerClaim
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: force-off-check
+  namespace: ($namespace)
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: force-off-check
+  namespace: ($namespace)
+rules:
+  - apiGroups: ["metal.ironcore.dev"]
+    resources: ["serverclaims"]
+    verbs: ["get", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: force-off-check
+  namespace: ($namespace)
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: force-off-check
+subjects:
+  - kind: ServiceAccount
+    name: force-off-check
+    namespace: ($namespace)

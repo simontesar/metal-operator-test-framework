@@ -18,6 +18,7 @@ TESTS := \
 	08-bmcsettings \
 	09-persistent-boot-order \
 	10-bmcversion \
+	12-force-power-off \
 	11-bmcuser \
 	13-event-subscriptions
 
@@ -41,6 +42,7 @@ help: ## Show available targets
 	@echo "    test/08-bmcsettings              (BMCSettings, Manager attribute)"
 	@echo "    test/09-persistent-boot-order    (persistent boot order)"
 	@echo "    test/10-bmcversion               (BMCVersion, version read without upgrade)"
+	@echo "    test/12-force-power-off          (forced power off after a graceful shutdown is ignored)"
 	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete)"
 	@echo "    test/13-event-subscriptions      (Redfish event subscriptions via metal-maintenance-operator telemetry)"
 	@echo ""

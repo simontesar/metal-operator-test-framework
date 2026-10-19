@@ -1,0 +1,67 @@
+# Requests the power off by patching the ServerClaim and times the transition
+# to Off directly on the BMC's redfish API. The metal-operator first issues a
+# GracefulShutdown, waits for --power-polling-timeout and only then issues a
+# ForceOff. As the booted image ignores the power button, the system turning
+# Off no earlier than the polling timeout proves that ForceOff took effect.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: force-off-check
+  namespace: ($namespace)
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: force-off-check
+      containers:
+        - name: check
+          image: curlimages/curl:8.11.1
+          env:
+            - name: URL
+              value: (join('', [$values.bmcScheme, '://', $values.bmcIP, ':', to_string($values.bmcPort), $systemURI]))
+            - name: CREDENTIALS
+              value: (join(':', [$values.username, $values.password]))
+            - name: NS
+              value: ($namespace)
+            - name: CLAIM
+              value: (join('-', ['compatibility', $namespace]))
+            - name: POLL_TIMEOUT
+              value: (to_string($powerPollingTimeout))
+            - name: SLACK
+              value: (to_string($forceOffDelay))
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              SA=/var/run/secrets/kubernetes.io/serviceaccount
+              MIN=$((POLL_TIMEOUT - 1))
+              MAX=$((POLL_TIMEOUT + SLACK))
+
+              state() {
+                curl -fsS -k -u "$CREDENTIALS" "$URL" | sed -n 's/.*"PowerState" *: *"\([A-Za-z]*\)".*/\1/p'
+              }
+
+              s=$(state)
+              [ "$s" = On ] || { echo "precondition failed: expected PowerState On, got '$s'"; exit 1; }
+
+              curl -fsS -o /dev/null -X PATCH \
+                --cacert "$SA/ca.crt" \
+                -H "Authorization: Bearer $(cat "$SA/token")" \
+                -H 'Content-Type: application/merge-patch+json' \
+                -d '{"spec":{"power":"Off"}}' \
+                "https://kubernetes.default.svc/apis/metal.ironcore.dev/v1alpha1/namespaces/$NS/serverclaims/$CLAIM"
+              start=$(date +%s)
+              echo "requested power off, expecting Off between ${MIN}s and ${MAX}s"
+
+              while :; do
+                s=$(state || echo unknown)
+                t=$(( $(date +%s) - start ))
+                echo "t=${t}s PowerState=$s"
+                [ "$s" = Off ] && break
+                [ "$t" -le "$MAX" ] || { echo "FAIL: still $s after ${MAX}s, ForceOff not issued or not honoured"; exit 1; }
+                sleep 2
+              done
+
+              [ "$t" -ge "$MIN" ] || { echo "FAIL: Off after ${t}s (< ${MIN}s), GracefulShutdown took effect, the booted image does not ignore the power button"; exit 1; }
+              echo "PASS: Off after ${t}s, only reachable via ForceOff"
