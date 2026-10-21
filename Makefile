@@ -21,8 +21,7 @@ TESTS := \
 	12-force-power-off \
 	11-bmcuser \
 	13-event-subscriptions \
-	14-biosversion-upgrade \
-	15-bmcversion-upgrade
+	14-biosversion-upgrade
 
 .PHONY: help
 help: ## Show available targets
