@@ -1,8 +1,8 @@
-# Upgrades the BMC firmware through a BMCVersion and downgrades it again to
-# restore the baseline. The metal-maintenance-operator puts the BMC's servers
-# into maintenance, resets the BMC, checks the FirmwareInventory for staged BMC
-# updates, issues UpdateService.SimpleUpdate, polls the returned task, resets
-# the BMC to activate the firmware and verifies Manager.FirmwareVersion.
+# The test runs through three BMCVersion resources:
+# 1. Ensuring the baseline version as configured in bmcVersion is installed. `15-bmcversion-upgrade.baselineImageURI` must provide this version.
+# 2. Installing 15-bmcversion-upgrade.version
+# 3. Restoring the baseline version
+# This is necessary so that the server is kept in a clean state but also potentially deals with an earlier, interrupted test.
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Test
 metadata:
@@ -51,8 +51,7 @@ spec:
                 name: ($serverName)
               status:
                 state: Available
-    # Ensure the BMC runs the baseline version so that a run after an aborted
-    # earlier run still upgrades. Usually a no-op, otherwise a downgrade.
+    # Ensure the version expected as baseline, potentially a no-op.
     - name: prepare-baseline
       try:
         - apply:
@@ -146,9 +145,6 @@ spec:
                 name: (join('-', [$bmcName, 'upgrade']))
               status:
                 state: Completed
-                # The upgrade was issued after the pending check, the task
-                # completed, the BMC was reset and FirmwareVersion changed. The
-                # activating reset clears status.upgradeTask.
                 (conditions[?type == 'ResetIssued'] | [0].status): "True"
                 (conditions[?type == 'VersionUpgradeIssued'] | [0].status): "True"
                 (conditions[?type == 'VersionUpgradeCompleted'] | [0].status): "True"
@@ -189,8 +185,6 @@ spec:
                 (annotations."metal.ironcore.dev/operation" == null): true
               status:
                 state: Available
-    # Downgrades to the baseline so other tests keep finding the BMC firmware
-    # version they expect.
     - name: restore-baseline
       try:
         - delete:
@@ -226,7 +220,6 @@ spec:
                 name: (join('-', [$bmcName, 'baseline']))
               status:
                 state: Completed
-                # A real downgrade ran, not a no-op
                 (conditions[?type == 'VersionUpgradeIssued'] | [0].status): "True"
                 (conditions[?type == 'VersionUpgradeVerification'] | [0].status): "True"
         - assert:
