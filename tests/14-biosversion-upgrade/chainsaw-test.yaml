@@ -1,5 +1,5 @@
 # The test runs through three BIOSVersion resources:
-# 1. Ensuring the baseline version as configured in biosVersion is installed. `14-biosversion-upgrade..baselineImageURI` must provide this version.
+# 1. Ensuring the baseline version as configured in biosVersion is installed. `14-biosversion-upgrade.baselineImageURI` must provide this version.
 # 2. Installing 14-biosversion-upgrade.version
 # 3. Restoring the baseline version
 # This is necessary so that the server is kept in a clean state but also potentially deals with an earlier, interrupted test.
