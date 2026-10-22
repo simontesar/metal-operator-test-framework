@@ -1,0 +1,21 @@
+# One BMCVersion template for the baseline, upgrade and restore steps; each
+# apply binds $role, $version and $imageURI.
+apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+kind: BMCVersion
+metadata:
+  name: (join('-', [$bmcName, $role]))
+  annotations:
+    # Lets chainsaw's cleanup delete the resource while its ServerMaintenances
+    # are still active, e.g. after a failed upgrade.
+    metal.ironcore.dev/operation: allow-in-progress-delete
+spec:
+  bmcRef:
+    name: ($bmcName)
+  version: ($version)
+  image:
+    URI: ($imageURI)
+    transferProtocol: ($values."15-bmcversion-upgrade".transferProtocol)
+  serverMaintenancePolicy: Enforced
+  # Surface a failed upgrade instead of retrying it
+  retryPolicy:
+    maxAttempts: 0
