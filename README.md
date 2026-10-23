@@ -57,6 +57,16 @@ biosVersion: "1.0.0"
   testMessageId: "TestEventId" # a MessageId your BMC accepts in SubmitTestEvent, e.g. "SYS1000" on Dell iDRAC
   testSeverity: "OK"
   testOriginOfCondition: "/redfish/v1/Managers/1"
+14-biosversion-upgrade:
+  transferProtocol: HTTP
+  baselineImageURI: "http://repo.example.com/bios-1.0.0.bin" # installs biosVersion, restored after the test
+  version: "1.1.0"
+  imageURI: "http://repo.example.com/bios-1.1.0.bin"
+15-bmcversion-upgrade:
+  transferProtocol: HTTP
+  baselineImageURI: "http://repo.example.com/bmc-1.0.0.bin" # installs firmwareVersion, restored after the test
+  version: "1.1.0"
+  imageURI: "http://repo.example.com/bmc-1.1.0.bin"
 ```
 
 Adjust the credentials and expectations to your respective values and point the tests to it:
