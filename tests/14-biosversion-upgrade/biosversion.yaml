@@ -1,0 +1,18 @@
+apiVersion: system.metal.ironcore.dev/v1alpha1
+kind: BIOSVersion
+metadata:
+  name: (join('-', [$bmcName, $role]))
+  annotations:
+    # Set so chainsaw can delete the resoruce when a ServerMaintenance is still
+    # active, after a potential failed upgrade.
+    metal.ironcore.dev/operation: allow-in-progress-delete
+spec:
+  serverRef:
+    name: ($serverName)
+  version: ($version)
+  image:
+    URI: ($imageURI)
+    transferProtocol: ($values."14-biosversion-upgrade".transferProtocol)
+  serverMaintenancePolicy: Enforced
+  retryPolicy:
+    maxAttempts: 0

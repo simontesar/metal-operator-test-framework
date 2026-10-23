@@ -1,0 +1,18 @@
+apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+kind: BMCVersion
+metadata:
+  name: (join('-', [$bmcName, $role]))
+  annotations:
+    # Set so chainsaw can delete the resoruce when a ServerMaintenance is still
+    # active, after a potential failed upgrade.
+    metal.ironcore.dev/operation: allow-in-progress-delete
+spec:
+  bmcRef:
+    name: ($bmcName)
+  version: ($version)
+  image:
+    URI: ($imageURI)
+    transferProtocol: ($values."15-bmcversion-upgrade".transferProtocol)
+  serverMaintenancePolicy: Enforced
+  retryPolicy:
+    maxAttempts: 0

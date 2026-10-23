@@ -20,7 +20,9 @@ TESTS := \
 	10-bmcversion \
 	12-force-power-off \
 	11-bmcuser \
-	13-event-subscriptions
+	13-event-subscriptions \
+	14-biosversion-upgrade \
+	15-bmcversion-upgrade
 
 .PHONY: help
 help: ## Show available targets
@@ -45,6 +47,8 @@ help: ## Show available targets
 	@echo "    test/12-force-power-off          (forced power off after a graceful shutdown is ignored)"
 	@echo "    test/11-bmcuser                  (BMCUser, BMC account create/rotate/delete)"
 	@echo "    test/13-event-subscriptions      (Redfish event subscriptions via metal-maintenance-operator telemetry)"
+	@echo "    test/14-biosversion-upgrade      (BIOSVersion, BIOS firmware upgrade and downgrade)"
+	@echo "    test/15-bmcversion-upgrade       (BMCVersion, BMC firmware upgrade and downgrade)"
 	@echo ""
 
 .PHONY: require-values
