@@ -1,0 +1,258 @@
+# The test runs through three BMCVersion resources:
+# 1. Ensuring the baseline version as configured in bmcVersion is installed. `15-bmcversion-upgrade.baselineImageURI` must provide this version.
+# 2. Installing 15-bmcversion-upgrade.version
+# 3. Restoring the baseline version
+# This is necessary so that the server is kept in a clean state but also potentially deals with an earlier, interrupted test.
+apiVersion: chainsaw.kyverno.io/v1alpha1
+kind: Test
+metadata:
+  name: 15-bmcversion-upgrade
+spec:
+  concurrent: false
+  bindings:
+    - name: bmcName
+      value: (join('-', ['compatibility', $namespace]))
+    - name: serverName
+      value: (join('-', [$bmcName, 'system-0']))
+  steps:
+    - name: register-bmc
+      try:
+        - apply:
+            file: ../shared/bmcsecret.yaml
+        - apply:
+            file: ../shared/bmc.yaml
+      cleanup:
+        - sleep:
+            duration: 10s
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              labels:
+                metal-operator-test-framework/namespace: ($namespace)
+    - name: assert-bmc-enabled
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: ($bmcName)
+              status:
+                state: Enabled
+    - name: assert-server-available
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                state: Available
+    # Ensure the version expected as baseline, potentially a no-op.
+    - name: prepare-baseline
+      try:
+        - apply:
+            bindings:
+              - name: role
+                value: baseline
+              - name: version
+                value: ($values.firmwareVersion)
+              - name: imageURI
+                value: ($values."15-bmcversion-upgrade".baselineImageURI)
+            file: bmcversion.yaml
+        # Fail fast on Failed instead of waiting for the assert timeout
+        - assert:
+            timeout: 20m
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'baseline']))
+              status:
+                (state == 'Completed' || state == 'Failed'): true
+        - assert:
+            timeout: 5s
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'baseline']))
+              status:
+                state: Completed
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: ($bmcName)
+              status:
+                state: Enabled
+                firmwareVersion: ($values.firmwareVersion)
+        - assert:
+            timeout: 15m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+                (annotations."metal.ironcore.dev/operation" == null): true
+              status:
+                state: Available
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              name: (join('-', [$bmcName, 'baseline']))
+      catch:
+        - describe:
+            apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+            kind: BMCVersion
+        - podLogs:
+            namespace: metal-maintenance-operator-system
+            selector: control-plane=controller-manager
+            tail: 200
+    - name: upgrade
+      try:
+        - apply:
+            bindings:
+              - name: role
+                value: upgrade
+              - name: version
+                value: ($values."15-bmcversion-upgrade".version)
+              - name: imageURI
+                value: ($values."15-bmcversion-upgrade".imageURI)
+            file: bmcversion.yaml
+        - assert:
+            timeout: 20m
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'upgrade']))
+              status:
+                (state == 'Completed' || state == 'Failed'): true
+        - assert:
+            timeout: 5s
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'upgrade']))
+              status:
+                state: Completed
+                (conditions[?type == 'ResetIssued'] | [0].status): "True"
+                (conditions[?type == 'VersionUpgradeIssued'] | [0].status): "True"
+                (conditions[?type == 'VersionUpgradeCompleted'] | [0].status): "True"
+                (conditions[?type == 'VersionUpgradeCompleted'] | [0].reason): UpgradeTaskCompleted
+                (conditions[?type == 'VersionUpgradeReboot'] | [0].status): "True"
+                (conditions[?type == 'VersionUpgradeVerification'] | [0].status): "True"
+      catch:
+        - describe:
+            apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+            kind: BMCVersion
+        - describe:
+            apiVersion: maintenance.metal.ironcore.dev/v1alpha1
+            kind: ServerMaintenance
+            namespace: metal-maintenance-operator-system
+        - podLogs:
+            namespace: metal-maintenance-operator-system
+            selector: control-plane=controller-manager
+            tail: 200
+    - name: assert-upgraded
+      try:
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: ($bmcName)
+              status:
+                state: Enabled
+                firmwareVersion: ($values."15-bmcversion-upgrade".version)
+        - assert:
+            timeout: 15m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+                (annotations."metal.ironcore.dev/operation" == null): true
+              status:
+                state: Available
+    - name: restore-baseline
+      try:
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              name: (join('-', [$bmcName, 'upgrade']))
+        - apply:
+            bindings:
+              - name: role
+                value: baseline
+              - name: version
+                value: ($values.firmwareVersion)
+              - name: imageURI
+                value: ($values."15-bmcversion-upgrade".baselineImageURI)
+            file: bmcversion.yaml
+        - assert:
+            timeout: 20m
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'baseline']))
+              status:
+                (state == 'Completed' || state == 'Failed'): true
+        - assert:
+            timeout: 5s
+            resource:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              metadata:
+                name: (join('-', [$bmcName, 'baseline']))
+              status:
+                state: Completed
+                (conditions[?type == 'VersionUpgradeIssued'] | [0].status): "True"
+                (conditions[?type == 'VersionUpgradeVerification'] | [0].status): "True"
+        - assert:
+            timeout: 5m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: BMC
+              metadata:
+                name: ($bmcName)
+              status:
+                state: Enabled
+                firmwareVersion: ($values.firmwareVersion)
+        - assert:
+            timeout: 15m
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+                (annotations."metal.ironcore.dev/operation" == null): true
+              status:
+                state: Available
+        - delete:
+            timeout: 2m
+            ref:
+              apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+              kind: BMCVersion
+              name: (join('-', [$bmcName, 'baseline']))
+      catch:
+        - describe:
+            apiVersion: baseboard.metal.ironcore.dev/v1alpha1
+            kind: BMCVersion
+        - podLogs:
+            namespace: metal-maintenance-operator-system
+            selector: control-plane=controller-manager
+            tail: 200

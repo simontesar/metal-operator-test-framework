@@ -44,7 +44,7 @@ jobs:
           chmod +x ./kind
           sudo mv ./kind /usr/local/bin/kind
       - name: Install containerlab
-        run: bash -c "$(curl -sL https://get.containerlab.dev)" -- -v 0.78.2
+        run: bash -c "$(curl -sL https://get.containerlab.dev)" -- -v 0.81.1
       - name: Install chainsaw
         uses: kyverno/action-install-chainsaw@v0.2.12
 
