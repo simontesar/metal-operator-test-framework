@@ -1,4 +1,4 @@
-# Capability Matrix
+# Capabilities
 
 This document specifies sets of capabilities a BMC needs to support to function with the metal-operator. Right now there is essentially one capability per method of the [`bmc.BMC`](https://github.com/ironcore-dev/metal-operator/blob/4d2a4eb1a372c9a01602a5bda26f6c9489393918/bmc/bmc.go#L191)-interface of the metal-operator.
 
