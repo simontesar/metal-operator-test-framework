@@ -13,16 +13,15 @@ The `tests` directory contains a suite of tests based on [chainsaw](https://kyve
 * A metal-operator installation and BMC to run tests against. This repository usually uses the locally virtualised [metal-lab](https://github.com/simontesar/metal-lab) to develop or verify functionality of the actual tests. You can use the lab setup as a reference.
 
 ### Usage
-The server to run a test against is configured by passing a values file to chainsaw via `VALUES`. There is no default, tests fail unless `VALUES` is set. To just see the suite run, use `infra/kind/values-basic-go.yaml`, which points to a Redfish mock setup in the [`kind` environment](environments.md).
+The server to run a test against is configured by passing a values file to chainsaw via `VALUES`. To try the tests without using your own BMC, clone the [`metal-lab`](https://github.com/simontesar/metal-lab) repository and refer to its `README` to bring it up.
 
 ```bash
 # Examples
-make test VALUES=infra/kind/values-basic-go.yaml                                       # Run all tests
-make test/01-bmc-registration VALUES=infra/kind/values-basic-go.yaml                   # Run a specific test
-make test/03-power-annotation VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run against a specific BMC
+export KUBECONFIG=/path/to/metal-lab/kubeconfig.yaml
+make test VALUES=/path/to/metal-lab/values-containerlab-node1.yaml                     # Run all tests
+make test/01-bmc-registration VALUES=/path/to/metal-lab/values-containerlab-node1.yaml # Run a specific test
+make test/03-power-annotation VALUES=/path/to/your-bmc.yaml                            # Run against your own BMC
 ```
-
-The [`metal-lab`](https://github.com/simontesar/metal-lab) repository provides a standalone containerlab-based environment and ships its own `VALUES` `values-containerlab-node1.yaml` / `values-containerlab-node2.yaml`. Clone the metal-lab repository and refer to its `README` to try the suite of tests without your own BMC.
 
 ### Bring your own BMC
 To run tests against your own BMC, copy these values into a new file:
