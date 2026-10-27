@@ -1,9 +1,0 @@
-bmcIP: "10.96.200.26"
-bmcPort: 8000
-bmcScheme: http
-username: foo
-password: bar
-firmwareVersion: "1.45.455b66-rev4"
-01-bmc-registration:
-  model: "Joo Janta 200"
-  powerState: "On"
