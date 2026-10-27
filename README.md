@@ -1,6 +1,6 @@
 # metal-operator test framework
 
-This repository aims to provide a set of capabilities a BMC-implementation needs to support to be usable with the [metal-operator](https://github.com/ironcore-dev/metal-operator), and a set of tests to verify these capabilities. Its goal is to enable BMC vendors or users to run these tests against a BMC with minimal effort and more easily determine what capabilities their BMC may be missing or implementing incorrectly.
+The [metal-operator](https://github.com/ironcore-dev/metal-operator) test framework provides a set of tests that can be used to verify that a given BMC and server are compatible with the metal-oprator. Its goal is to enable BMC vendors or users to run these tests against a BMC with minimal effort and more easily determine what capabilities their BMC may be missing or implementing incorrectly.
 
 ## Capabilities
 Refer to [capability matrix](capability-matrix.md) for a list of capabilities and their descriptions. Refer to the [coverage document](coverage.md) for what tests cover which capabilities. Determine what your BMC might not implement by referring to a failed test.
