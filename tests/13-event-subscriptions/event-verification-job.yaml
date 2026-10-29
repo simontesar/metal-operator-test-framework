@@ -1,0 +1,50 @@
+# Queries the operator's metrics confirming that a gauge signalling that a BMC's
+# test event arrived appears and is set to 1.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: event-verification
+  namespace: ($namespace)
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: event-verification
+      containers:
+        - name: check
+          image: curlimages/curl:8.11.1
+          env:
+            - name: URL
+              value: (join('', ['https://', $metricsService, '.', $operatorNamespace, '.svc:8443/metrics']))
+            - name: BMC
+              value: (join('-', ['compatibility', $namespace]))
+            - name: TIMEOUT
+              value: "180"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -eu
+              SA=/var/run/secrets/kubernetes.io/serviceaccount
+              METRIC=redfish_event_pipeline_test_last_result
+              start=$(date +%s)
+
+              # The metrics endpoint serves a self-signed certificate
+              metrics() {
+                curl -fsS -k -H "Authorization: Bearer $(cat "$SA/token")" "$URL"
+              }
+
+              while :; do
+                lines=$(metrics | grep "^$METRIC{" || true)
+                t=$(( $(date +%s) - start ))
+                if printf '%s\n' "$lines" | grep -qxF "$METRIC{hostname=\"$BMC\"} 1"; then
+                  echo "PASS: test event from $BMC received after ${t}s"
+                  exit 0
+                fi
+                [ "$t" -le "$TIMEOUT" ] || break
+                sleep 5
+              done
+
+              echo "FAIL: no test event from $BMC received within ${TIMEOUT}s, $METRIC series:"
+              printf '%s\n' "${lines:-<none>}"
+              exit 1
