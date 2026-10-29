@@ -63,6 +63,36 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
                 annotations:
                   metal-operator-test-framework/reconcile: subscribe
+    # Create a Job to read the operator's metrics. When the test event health
+    # check has completed, a BMC-specific Gauge should show up. This is the only
+    # way success is signalled, there is no condition update on the BMC itself.
+    - name: event-verification
+      try:
+        - apply:
+            file: metrics-rbac.yaml
+        - apply:
+            file: event-verification-job.yaml
+        - assert:
+            timeout: 4m
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: event-verification
+              status:
+                (conditions[?type == 'Complete' || type == 'Failed'] | [0].status): "True"
+        - assert:
+            timeout: 5s
+            resource:
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: event-verification
+              status:
+                (conditions[?type == 'Complete'] | [0].status): "True"
+      finally:
+        - podLogs:
+            selector: job-name=event-verification
     - name: unsubscribe
       try:
         - apply:
