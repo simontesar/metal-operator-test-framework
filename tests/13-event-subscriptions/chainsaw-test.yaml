@@ -5,6 +5,8 @@ metadata:
 spec:
   concurrent: false
   bindings:
+    - name: serverName
+      value: (join('-', ['compatibility', $namespace, 'system-0']))
     - name: operatorNamespace
       value: metal-maintenance-operator-system
     - name: operatorDeployment
@@ -44,10 +46,23 @@ spec:
                 name: (join('-', ['compatibility', $namespace]))
               status:
                 state: Enabled
+    # The subscription controller matches the vendor against the Server's
+    # manufacturer (Systems endpoint), not the BMC's (Manager endpoint).
+    # See https://github.com/ironcore-dev/metal-maintenance-operator/blob/17a374da64c6fc9f4a4194044c75e753683cb504/internal/telemetry/subscriptions/reconciler.go#L545
+    - name: assert-server-manufacturer
+      try:
+        - assert:
+            resource:
+              apiVersion: metal.ironcore.dev/v1alpha1
+              kind: Server
+              metadata:
+                name: ($serverName)
+              status:
+                (manufacturer != null): true
     - name: subscribe
       bindings:
         - name: vendor
-          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', join('-', ['compatibility', $namespace])).status.manufacturer)
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', $serverName).status.manufacturer)
         - name: model
           value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', join('-', ['compatibility', $namespace])).status.model)
       try:
