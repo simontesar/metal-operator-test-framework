@@ -48,7 +48,7 @@ spec:
                 state: Enabled
     # The subscription controller matches the vendor against the Server's
     # manufacturer (Systems endpoint), not the BMC's (Manager endpoint).
-    # See https://github.com/ironcore-dev/metal-maintenance-operator/blob/17a374da64c6fc9f4a4194044c75e753683cb504/internal/telemetry/subscriptions/reconciler.go#L545
+    # See https://github.com/ironcore-dev/metal-maintenance-operator/blob/ef4280b84bfd1d7854379ae3a689aad632150da4/internal/telemetry/subscriptions/reconciler.go#L676
     - name: assert-server-manufacturer
       try:
         - assert:
@@ -109,6 +109,11 @@ spec:
         - podLogs:
             selector: job-name=event-verification
     - name: unsubscribe
+      bindings:
+        - name: vendor
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'Server', '', $serverName).status.manufacturer)
+        - name: model
+          value: (x_k8s_get($client, 'metal.ironcore.dev/v1alpha1', 'BMC', '', join('-', ['compatibility', $namespace])).status.model)
       try:
         - apply:
             file: telemetry-config-baseline.yaml

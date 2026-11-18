@@ -4,8 +4,6 @@ metadata:
   name: ($telemetryConfigName)
   namespace: ($operatorNamespace)
 data:
-  config.yaml: |
-    apiVersion: telemetry.metal.ironcore.dev/v1alpha1
-    subscriptionReconcileInterval: 10s
-    perBMCTimeout: 30s
-    eventBasedHardware: []
+  # Every BMC with a usable EventService is subscribed by default, the
+  # BMC under test has to be excluded explicitly to be unsubscribed.
+  config.yaml: (to_string({apiVersion:'telemetry.metal.ironcore.dev/v1alpha1', subscriptionReconcileInterval:'10s', perBMCTimeout:'30s', excludeHardware:[{vendor:$vendor, models:[$model]}]}))
